@@ -25,6 +25,5 @@ def create_crawler_agent():
             "Format your response as a Markdown list with clear headings for each source.\n"
             "Focus on finding diverse and reliable sources that provide comprehensive information."
         ),
-        markdown=True,
-        show_tool_calls=False  # disable verbose tool usage logs in output
+        markdown=True
     )

@@ -34,7 +34,7 @@ def setup_parser():
         "-i", "--input", required=True, help="Input file containing the research prompt"
     )
     plan_parser.add_argument(
-        "-o", "--output", default="plan.md", help="Output file for the research plan (default: plan.md)"
+        "-o", "--output", default="output/plan.md", help="Output file for the research plan (default: plan.md)"
     )
     plan_parser.add_argument(
         "-k", "--api-key", help="OpenAI API key (overrides OPENAI_API_KEY environment variable)"

@@ -1,6 +1,6 @@
-# Gizmo - AI-Powered Research Assistant
+# G.I.Z.M.O. - AI-Powered Research Assistant
 
-Gizmo is a command-line research assistant powered by the Agno framework and OpenAI models. It orchestrates multiple specialized AI agents to perform in-depth internet research on any topic.
+G.I.Z.M.O. is a command-line research assistant powered by the Agno framework and OpenAI models. It orchestrates multiple specialized AI agents to perform in-depth internet research on any topic.
 
 ## Features
 
