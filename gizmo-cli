@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+"""
+Gizmo CLI - A research assistant powered by Agno framework.
+
+This script provides a command-line interface for Gizmo, allowing users to:
+1. Generate a research plan from a prompt
+2. Execute a research workflow based on a plan
+
+Usage:
+    gizmo-cli plan -i <input_file> -o <output_file>
+    gizmo-cli research -p <plan_file> -o <output_dir>
+"""
+
+from gizmo.cli import main
+
+if __name__ == "__main__":
+    main()

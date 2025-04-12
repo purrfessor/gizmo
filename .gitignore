@@ -167,6 +167,13 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Gizmo specific
+.memory/
+output/
+plan.md
+step*.md
+summary_final.md
+
 # Ruff stuff:
 .ruff_cache/
 
