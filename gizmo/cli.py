@@ -7,8 +7,10 @@ This module provides the command-line interface for Gizmo, allowing users to:
 2. Execute a research workflow based on a plan
 
 Usage:
-    gizmo plan -i <input_file> -o <output_file>
+    gizmo plan [-i <input_file> | -p <prompt>] [-o <output_file>]
     gizmo research -p <plan_file> -o <output_dir>
+
+Note: For the plan command, either -i or -p must be provided.
 """
 
 import argparse
@@ -31,7 +33,10 @@ def setup_parser():
         "plan", help="Generate a research plan from a prompt"
     )
     plan_parser.add_argument(
-        "-i", "--input", required=True, help="Input file containing the research prompt"
+        "-i", "--input", required=False, help="Input file containing the research prompt"
+    )
+    plan_parser.add_argument(
+        "-p", "--prompt", help="Direct research prompt text"
     )
     plan_parser.add_argument(
         "-o", "--output", default="output/plan.md", help="Output file for the research plan (default: plan.md)"
@@ -82,8 +87,14 @@ def main():
 
     try:
         if args.command == "plan":
-            # Validate input file exists
-            if not os.path.exists(args.input):
+            # Validate that either input file or prompt is provided
+            if not args.input and not args.prompt:
+                print("Error: Either -i/--input or -p/--prompt must be provided.")
+                print("Use -i/--input to specify an input file or -p/--prompt to provide the prompt directly.")
+                sys.exit(1)
+
+            # If input file is provided, validate it exists
+            if args.input and not os.path.exists(args.input):
                 print(f"Error: Input file '{args.input}' does not exist.")
                 sys.exit(1)
 
@@ -92,8 +103,13 @@ def main():
             if output_dir and not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
-            print(f"Generating research plan from '{args.input}'...")
-            run_plan(args.input, args.output)
+            if args.input:
+                print(f"Generating research plan from file '{args.input}'...")
+                run_plan(args.input, args.output)
+            else:
+                print("Generating research plan from provided prompt...")
+                run_plan(args.prompt, args.output, is_file=False)
+
             print(f"Research plan saved to '{args.output}'")
 
         elif args.command == "research":

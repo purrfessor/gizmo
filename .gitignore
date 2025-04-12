@@ -170,9 +170,6 @@ cython_debug/
 # Gizmo specific
 .memory/
 output/
-plan.md
-step*.md
-summary_final.md
 
 # Ruff stuff:
 .ruff_cache/

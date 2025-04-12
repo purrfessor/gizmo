@@ -35,7 +35,7 @@ def main():
 
     try:
         # Check if example_prompt.txt exists
-        if not os.path.exists("example_prompt.txt"):
+        if not os.path.exists("example/example_prompt.txt"):
             print("Error: example_prompt.txt not found")
             sys.exit(1)
 

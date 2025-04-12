@@ -42,15 +42,22 @@ Gizmo offers two main commands:
 ### 1. Generate a Research Plan
 
 ```bash
-gizmo plan -i <input_file> -o <output_file>
+gizmo plan [-i <input_file> | -p <prompt>] [-o <output_file>]
 ```
 
 - `-i, --input`: Path to a text file containing your research prompt
+- `-p, --prompt`: Direct research prompt text
 - `-o, --output`: Path where the research plan will be saved (default: `plan.md`)
 
-Example:
+Note: Either `-i` or `-p` must be provided.
+
+Examples:
 ```bash
+# Using an input file
 gizmo plan -i my_question.txt -o research_plan.md
+
+# Using a direct prompt
+gizmo plan -p "What are the environmental and economic impacts of vertical farming?" -o research_plan.md
 ```
 
 ### 2. Execute Research Based on a Plan
