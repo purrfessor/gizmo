@@ -25,7 +25,7 @@ G.I.Z.M.O. helps you research any topic thoroughly without spending hours search
 ### Prerequisites
 
 - Python 3.8 or higher
-- OpenAI API key
+- OpenAI API key (No ChatGPT subscription needed - you can pay as you go with just an API key from the [OpenAI platform](https://help.openai.com/en/articles/4936850-where-do-i-find-my-openai-api-key))
 
 ### Install from Source
 
