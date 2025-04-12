@@ -7,8 +7,11 @@ This script provides a command-line interface for Gizmo, allowing users to:
 2. Execute a research workflow based on a plan
 
 Usage:
-    gizmo-cli plan -i <input_file> -o <output_file>
+    gizmo-cli plan [-i <input_file> | -p <prompt>] [-s <step_number>] [-o <output_file>]
     gizmo-cli research -p <plan_file> -o <output_dir>
+
+Note: For the plan command, either -i or -p must be provided.
+      The -s option allows specifying a target number of steps for the research plan (max: 30).
 """
 
 from gizmo.cli import main

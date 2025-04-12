@@ -42,11 +42,12 @@ Gizmo offers two main commands:
 ### 1. Generate a Research Plan
 
 ```bash
-gizmo plan [-i <input_file> | -p <prompt>] [-o <output_file>]
+gizmo plan [-i <input_file> | -p <prompt>] [-s <step_number>] [-o <output_file>]
 ```
 
 - `-i, --input`: Path to a text file containing your research prompt
 - `-p, --prompt`: Direct research prompt text
+- `-s, --stepnumber`: Target number of steps for the research plan (max: 30)
 - `-o, --output`: Path where the research plan will be saved (default: `plan.md`)
 
 Note: Either `-i` or `-p` must be provided.

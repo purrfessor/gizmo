@@ -7,10 +7,11 @@ This module provides the command-line interface for Gizmo, allowing users to:
 2. Execute a research workflow based on a plan
 
 Usage:
-    gizmo plan [-i <input_file> | -p <prompt>] [-o <output_file>]
+    gizmo plan [-i <input_file> | -p <prompt>] [-s <step_number>] [-o <output_file>]
     gizmo research -p <plan_file> -o <output_dir>
 
 Note: For the plan command, either -i or -p must be provided.
+      The -s option allows specifying a target number of steps for the research plan (max: 30).
 """
 
 import argparse
@@ -37,6 +38,9 @@ def setup_parser():
     )
     plan_parser.add_argument(
         "-p", "--prompt", help="Direct research prompt text"
+    )
+    plan_parser.add_argument(
+        "-s", "--stepnumber", type=int, help="Target number of steps for the research plan (max: 30)"
     )
     plan_parser.add_argument(
         "-o", "--output", default="output/plan.md", help="Output file for the research plan (default: plan.md)"
@@ -103,12 +107,17 @@ def main():
             if output_dir and not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
+            # Validate step number if provided
+            if args.stepnumber is not None and args.stepnumber <= 0:
+                print("Error: Step number must be a positive integer.")
+                sys.exit(1)
+
             if args.input:
                 print(f"Generating research plan from file '{args.input}'...")
-                run_plan(args.input, args.output)
+                run_plan(args.input, args.output, step_number=args.stepnumber)
             else:
                 print("Generating research plan from provided prompt...")
-                run_plan(args.prompt, args.output, is_file=False)
+                run_plan(args.prompt, args.output, is_file=False, step_number=args.stepnumber)
 
             print(f"Research plan saved to '{args.output}'")
 
