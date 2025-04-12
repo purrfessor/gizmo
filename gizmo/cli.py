@@ -7,11 +7,13 @@ This module provides the command-line interface for Gizmo, allowing users to:
 2. Execute a research workflow based on a plan
 
 Usage:
-    gizmo plan [-i <input_file> | -p <prompt>] [-s <step_number>] [-o <output_file>]
+    gizmo plan [-i <input_file> | -p <prompt>] [-s <step_number>] [-o <output_path>]
     gizmo research -p <plan_file> -o <output_dir>
 
 Note: For the plan command, either -i or -p must be provided.
       The -s option allows specifying a target number of steps for the research plan (max: 30).
+      For the -o option, if the path ends with '.md', it writes directly to that file.
+      Otherwise, it creates a directory and writes to 'plan.md' inside it.
 """
 
 import argparse
@@ -43,7 +45,9 @@ def setup_parser():
         "-s", "--stepnumber", type=int, help="Target number of steps for the research plan (max: 30)"
     )
     plan_parser.add_argument(
-        "-o", "--output", default="output/plan.md", help="Output file for the research plan (default: plan.md)"
+        "-o", "--output", default="output/plan.md", 
+        help="Output path for the research plan. If it ends with '.md', writes directly to that file. "
+             "Otherwise, creates a directory and writes to 'plan.md' inside it. (default: output/plan.md)"
     )
     plan_parser.add_argument(
         "-k", "--api-key", help="OpenAI API key (overrides OPENAI_API_KEY environment variable)"
@@ -102,10 +106,20 @@ def main():
                 print(f"Error: Input file '{args.input}' does not exist.")
                 sys.exit(1)
 
-            # Create output directory if it doesn't exist
-            output_dir = os.path.dirname(args.output)
-            if output_dir and not os.path.exists(output_dir):
-                os.makedirs(output_dir)
+            # Process output parameter
+            if args.output.endswith(".md"):
+                # If output ends with .md, use it directly as the output file path
+                output_path = args.output
+                # Create output directory if it doesn't exist
+                output_dir = os.path.dirname(output_path)
+                if output_dir and not os.path.exists(output_dir):
+                    os.makedirs(output_dir)
+            else:
+                # If output doesn't end with .md, use it as a directory and put plan.md inside
+                output_dir = args.output
+                if not os.path.exists(output_dir):
+                    os.makedirs(output_dir)
+                output_path = os.path.join(output_dir, "plan.md")
 
             # Validate step number if provided
             if args.stepnumber is not None and args.stepnumber <= 0:
@@ -114,12 +128,12 @@ def main():
 
             if args.input:
                 print(f"Generating research plan from file '{args.input}'...")
-                run_plan(args.input, args.output, step_number=args.stepnumber)
+                run_plan(args.input, output_path, step_number=args.stepnumber)
             else:
                 print("Generating research plan from provided prompt...")
-                run_plan(args.prompt, args.output, is_file=False, step_number=args.stepnumber)
+                run_plan(args.prompt, output_path, is_file=False, step_number=args.stepnumber)
 
-            print(f"Research plan saved to '{args.output}'")
+            print(f"Research plan saved to '{output_path}'")
 
         elif args.command == "research":
             # Validate plan file exists

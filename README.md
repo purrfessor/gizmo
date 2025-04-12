@@ -48,7 +48,7 @@ gizmo plan [-i <input_file> | -p <prompt>] [-s <step_number>] [-o <output_file>]
 - `-i, --input`: Path to a text file containing your research prompt
 - `-p, --prompt`: Direct research prompt text
 - `-s, --stepnumber`: Target number of steps for the research plan (max: 30)
-- `-o, --output`: Path where the research plan will be saved (default: `plan.md`)
+- `-o, --output`: Path where the research plan will be saved. If it ends with '.md', writes directly to that file. Otherwise, creates a directory and writes to 'plan.md' inside it. (default: `output/plan.md`)
 
 Note: Either `-i` or `-p` must be provided.
 
