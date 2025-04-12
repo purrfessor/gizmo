@@ -29,6 +29,5 @@ def create_researcher_agent():
             "Be thorough and ensure all aspects of the question are addressed.\n"
             "Your analysis should be factual, balanced, and in-depth."
         ),
-        markdown=True,
-        show_tool_calls=True  # show tool calls during development
+        markdown=True
     )

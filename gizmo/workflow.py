@@ -17,6 +17,8 @@ from gizmo.utils.error_utils import retry, handle_agent_error, log_error
 from gizmo.utils.file_utils import read_file, write_file, ensure_dir, parse_plan_file, formulate_search_query
 
 
+import json
+
 @retry(max_attempts=3, delay=2.0)
 def run_plan(input_prompt, output_plan_path, is_file=True, step_number=None):
     """
@@ -47,12 +49,42 @@ def run_plan(input_prompt, output_plan_path, is_file=True, step_number=None):
 
     print("Generating research plan...")
     # Run the planning agent to get the plan
-    plan_markdown = plan_agent.run(user_prompt).content
+    plan_result = plan_agent.run(user_prompt).content
 
-    # Write the plan to the output file
-    write_file(output_plan_path, plan_markdown)
+    try:
+        # Check if the result is a Plan object or a string
+        if hasattr(plan_result, 'steps'):
+            # It's a Plan object, convert it to a list of dictionaries
+            plan_data = [{"step": step.step, "topic": step.topic} for step in plan_result.steps]
+            # Convert to JSON string for storage
+            plan_json = json.dumps(plan_data)
+        else:
+            # It's a string (content), try to parse it as JSON
+            plan_json = plan_result.content
+            plan_data = json.loads(plan_json)
 
-    return plan_markdown
+        # Convert the data to Markdown for backward compatibility
+        plan_markdown = "# Research Plan\n\n"
+        for item in plan_data:
+            step_num = item.get("step", 0)
+            topic = item.get("topic", "")
+            plan_markdown += f"{step_num}. {topic}\n\n"
+
+        # Write both the JSON and Markdown versions to the output file
+        write_file(output_plan_path, plan_markdown)
+
+        # Also save the raw JSON to a file with the same name but .json extension
+        json_path = output_plan_path.replace(".md", ".json")
+        if json_path == output_plan_path:  # If the path doesn't end with .md
+            json_path = output_plan_path + ".json"
+        write_file(json_path, plan_json)
+
+        return plan_markdown
+    except json.JSONDecodeError as e:
+        # If JSON parsing fails, assume the output is already in Markdown format
+        print(f"Warning: Could not parse plan as JSON. Using raw output: {str(e)}")
+        write_file(output_plan_path, plan_json)
+        return plan_json
 
 
 def run_research(plan_path, output_dir, memory_dir=".memory"):

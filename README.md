@@ -25,9 +25,11 @@ G.I.Z.M.O. is a command-line research assistant powered by the Agno framework an
    cd gizmo
    ```
 
-2. Install the package:
+2. Create the venv and install the package:
    ```bash
-   pip install -e .
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip3 install -e .
    ```
 
 3. Set your OpenAI API key:
