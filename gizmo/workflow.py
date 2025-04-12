@@ -190,7 +190,7 @@ def run_crawler_agent(step, step_number, memory_dir):
         query = formulate_search_query(step)
 
         # Run the crawler agent
-        search_results = crawler.run(f"Research question: {query}")
+        search_results = crawler.run(f"Research question: {query}").content
 
         # Save the search results
         search_file = os.path.join(memory_dir, f"step{step_number}_search.md")
@@ -229,7 +229,7 @@ def run_researcher_agent(step, search_results, step_number, memory_dir):
         )
 
         # Run the researcher agent
-        analysis = researcher.run(researcher_input)
+        analysis = researcher.run(researcher_input).content
 
         # Save the analysis
         analysis_file = os.path.join(memory_dir, f"step{step_number}_analysis.md")
@@ -261,7 +261,7 @@ def run_writer_agent(analysis, step_number, output_dir):
         writer = create_writer_agent()
 
         # Run the writer agent
-        polished_report = writer.run(analysis)
+        polished_report = writer.run(analysis).content
 
         # Save the polished report
         report_file = os.path.join(output_dir, f"step{step_number}.md")
@@ -295,7 +295,7 @@ def run_step_summarizer_agent(polished_report, step_number, memory_dir):
         summarizer = create_step_summarizer_agent()
 
         # Run the step summarizer agent
-        summary = summarizer.run(polished_report)
+        summary = summarizer.run(polished_report).content
 
         # Save the summary
         summary_file = os.path.join(memory_dir, f"step{step_number}_summary.md")
@@ -332,7 +332,7 @@ def run_final_summarizer_agent(step_summaries, output_dir):
         summarizer_input = "# Research Step Summaries\n\n" + "\n\n".join(step_summaries)
 
         # Run the final summarizer agent
-        final_summary = summarizer.run(summarizer_input)
+        final_summary = summarizer.run(summarizer_input).content
 
         # Save the final summary
         summary_file = os.path.join(output_dir, "summary_final.md")

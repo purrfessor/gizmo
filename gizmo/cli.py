@@ -8,12 +8,13 @@ This module provides the command-line interface for Gizmo, allowing users to:
 
 Usage:
     gizmo plan [-i <input_file> | -p <prompt>] [-s <step_number>] [-o <output_path>]
-    gizmo research -p <plan_file> -o <output_dir>
+    gizmo research [-p <plan_file>] [-o <output_dir>]
 
 Note: For the plan command, either -i or -p must be provided.
       The -s option allows specifying a target number of steps for the research plan (max: 30).
       For the -o option, if the path ends with '.md', it writes directly to that file.
       Otherwise, it creates a directory and writes to 'plan.md' inside it.
+      For the research command, if -p is not provided, it looks for the plan in './output/plan.md' by default.
 """
 
 import argparse
@@ -45,7 +46,7 @@ def setup_parser():
         "-s", "--stepnumber", type=int, help="Target number of steps for the research plan (max: 30)"
     )
     plan_parser.add_argument(
-        "-o", "--output", default="output/plan.md", 
+        "-o", "--output", default="output/plan.md",
         help="Output path for the research plan. If it ends with '.md', writes directly to that file. "
              "Otherwise, creates a directory and writes to 'plan.md' inside it. (default: output/plan.md)"
     )
@@ -58,7 +59,7 @@ def setup_parser():
         "research", help="Execute a research workflow based on a plan"
     )
     research_parser.add_argument(
-        "-p", "--plan", required=True, help="Input file containing the research plan"
+        "-p", "--plan", default="./output/plan.json", help="Input file containing the research plan (default: ./output/plan.md)"
     )
     research_parser.add_argument(
         "-o", "--output", default="output", help="Output directory for research results (default: output)"
