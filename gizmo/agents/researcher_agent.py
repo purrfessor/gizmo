@@ -2,7 +2,7 @@
 Researcher Agent for Gizmo.
 
 This module defines the Researcher Agent, which is responsible for taking
-the raw info from the crawler and producing an in-depth analysis or
+the raw info from the source agent and producing an in-depth analysis or
 explanation for that step.
 """
 import os
@@ -93,7 +93,7 @@ def run_researcher_agent(step, search_results, step_number, memory_dir, output_d
 
     Args:
         step (str): The step description
-        search_results (str): The search results from the crawler
+        search_results (str): The search results from the source agent
         step_number (int): The step number
         memory_dir (str): Directory to save intermediate files
         output_dir (str): Directory containing the output files

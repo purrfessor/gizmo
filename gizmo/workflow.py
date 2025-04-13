@@ -16,10 +16,10 @@ import json
 import os
 
 from gizmo.agents.researcher_agent import run_researcher_agent
-from gizmo.agents.crawler_agent import create_crawler_agent
-from gizmo.agents.planning_agent import create_planning_agent
-from gizmo.agents.summarizer_agents import create_step_summarizer_agent, create_final_summarizer_agent
-from gizmo.agents.writer_agent import create_writer_agent
+from gizmo.agents.source_agent import run_source_agent
+from gizmo.agents.planning_agent import run_planning_agent
+from gizmo.agents.summarizer_agents import run_step_summarizer_agent, run_final_summarizer_agent
+from gizmo.agents.writer_agent import run_writer_agent
 from gizmo.utils.error_utils import retry, handle_agent_error, log_error
 from gizmo.utils.file_utils import read_file, write_file, ensure_dir, parse_plan_file, formulate_search_query
 
@@ -41,55 +41,8 @@ def run_plan(input_prompt, output_plan_path, is_file=True, step_number=None):
     Raises:
         Exception: If the plan generation fails after retries
     """
-    # Get the user prompt
-    if is_file:
-        # Read the user prompt from file
-        user_prompt = read_file(input_prompt)
-    else:
-        # Use the input directly as the prompt
-        user_prompt = input_prompt
-
-    # Create the planning agent
-    plan_agent = create_planning_agent(step_number)
-
     print("Generating research plan...")
-    # Run the planning agent to get the plan
-    plan_result = plan_agent.run(user_prompt).content
-
-    try:
-        # Check if the result is a Plan object or a string
-        if hasattr(plan_result, 'steps'):
-            # It's a Plan object, convert it to a list of dictionaries
-            plan_data = [{"step": step.step, "topic": step.topic} for step in plan_result.steps]
-            # Convert to JSON string for storage
-            plan_json = json.dumps(plan_data)
-        else:
-            # It's a string (content), try to parse it as JSON
-            plan_json = plan_result.content
-            plan_data = json.loads(plan_json)
-
-        # Convert the data to Markdown for backward compatibility
-        plan_markdown = "# Research Plan\n\n"
-        for item in plan_data:
-            step_num = item.get("step", 0)
-            topic = item.get("topic", "")
-            plan_markdown += f"{step_num}. {topic}\n\n"
-
-        # Write both the JSON and Markdown versions to the output file
-        write_file(output_plan_path, plan_markdown)
-
-        # Also save the raw JSON to a file with the same name but .json extension
-        json_path = output_plan_path.replace(".md", ".json")
-        if json_path == output_plan_path:  # If the path doesn't end with .md
-            json_path = output_plan_path + ".json"
-        write_file(json_path, plan_json)
-
-        return plan_markdown
-    except json.JSONDecodeError as e:
-        # If JSON parsing fails, assume the output is already in Markdown format
-        print(f"Warning: Could not parse plan as JSON. Using raw output: {str(e)}")
-        write_file(output_plan_path, plan_json)
-        return plan_json
+    return run_planning_agent(input_prompt, output_plan_path, is_file, step_number)
 
 
 def run_research(plan_path, output_dir, memory_dir=".memory"):
@@ -122,9 +75,9 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
         print(f"\nProcessing {step_num}: {step}")
 
         try:
-            # Step 1: Crawler - Search the web for information
-            print(f"  Running crawler for {step_num}...")
-            search_results = run_crawler_agent(step, i, memory_dir)
+            # Step 1: Source - Search the web for information
+            print(f"  Running source agent for {step_num}...")
+            search_results = run_source_agent(step, i, memory_dir)
 
             # Step 2: Researcher - Analyze the information
             print(f"  Running researcher for {step_num}...")
@@ -171,142 +124,7 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
     print("\nResearch completed!")
 
 
-@retry(max_attempts=2, delay=1.0)
-def run_crawler_agent(step, step_number, memory_dir):
-    """
-    Run the Crawler Agent for a step.
-
-    Args:
-        step (str): The step description
-        step_number (int): The step number
-        memory_dir (str): Directory to save intermediate files
-
-    Returns:
-        str: The search results
-
-    Raises:
-        Exception: If the crawler agent fails after retries
-    """
-    try:
-        # Create the crawler agent
-        crawler = create_crawler_agent()
-
-        # Formulate a search query from the step
-        query = formulate_search_query(step)
-
-        # Run the crawler agent
-        search_results = crawler.run(f"Research question: {query}").content
-
-        # Save the search results
-        search_file = os.path.join(memory_dir, f"step{step_number}_search.md")
-        write_file(search_file, search_results)
-
-        return search_results
-    except Exception as e:
-        return handle_agent_error("Crawler", step_number, e)
 
 
-@retry(max_attempts=2, delay=1.0)
-def run_writer_agent(analysis, step_number, output_dir):
-    """
-    Run the Writer Agent for a step.
-
-    Args:
-        analysis (str): The analysis from the researcher
-        step_number (int): The step number
-        output_dir (str): Directory to save output files
-
-    Returns:
-        str: The polished report
-
-    Raises:
-        Exception: If the writer agent fails after retries
-    """
-    try:
-        # Create the writer agent
-        writer = create_writer_agent()
-
-        # Run the writer agent
-        polished_report = writer.run(analysis).content
-
-        # Save the polished report
-        report_file = os.path.join(output_dir, f"step{step_number}.md")
-        write_file(report_file, polished_report)
-
-        return polished_report
-    except Exception as e:
-        fallback = analysis  # Use the researcher's analysis as fallback
-        write_file(os.path.join(output_dir, f"step{step_number}.md"), fallback)
-        return handle_agent_error("Writer", step_number, e, fallback)
 
 
-@retry(max_attempts=2, delay=1.0)
-def run_step_summarizer_agent(polished_report, step_number, memory_dir):
-    """
-    Run the Step Summarizer Agent for a step.
-
-    Args:
-        polished_report (str): The polished report from the writer
-        step_number (int): The step number
-        memory_dir (str): Directory to save intermediate files
-
-    Returns:
-        str: The summary
-
-    Raises:
-        Exception: If the step summarizer agent fails after retries
-    """
-    try:
-        # Create the step summarizer agent
-        summarizer = create_step_summarizer_agent()
-
-        # Run the step summarizer agent
-        summary = summarizer.run(polished_report).content
-
-        # Save the summary
-        summary_file = os.path.join(memory_dir, f"step{step_number}_summary.md")
-        write_file(summary_file, summary)
-
-        return summary
-    except Exception as e:
-        # Generate a simple summary as fallback
-        fallback = f"This step covered: {polished_report[:100]}..."
-        write_file(os.path.join(memory_dir, f"step{step_number}_summary.md"), fallback)
-        return handle_agent_error("Step Summarizer", step_number, e, fallback)
-
-
-@retry(max_attempts=2, delay=1.0)
-def run_final_summarizer_agent(step_summaries, output_dir):
-    """
-    Run the Final Summarizer Agent.
-
-    Args:
-        step_summaries (list): List of step summaries
-        output_dir (str): Directory to save output files
-
-    Returns:
-        str: The final summary
-
-    Raises:
-        Exception: If the final summarizer agent fails after retries
-    """
-    try:
-        # Create the final summarizer agent
-        summarizer = create_final_summarizer_agent()
-
-        # Prepare the input for the final summarizer
-        summarizer_input = "# Research Step Summaries\n\n" + "\n\n".join(step_summaries)
-
-        # Run the final summarizer agent
-        final_summary = summarizer.run(summarizer_input).content
-
-        # Save the final summary
-        summary_file = os.path.join(output_dir, "summary_final.md")
-        write_file(summary_file, final_summary)
-
-        return final_summary
-    except Exception as e:
-        # Generate a simple summary as fallback
-        fallback = "# Research Summary\n\n" + "\n\n".join(step_summaries)
-        write_file(os.path.join(output_dir, "summary_final.md"), fallback)
-        return handle_agent_error("Final Summarizer", 0, e, fallback)
