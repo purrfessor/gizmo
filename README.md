@@ -307,12 +307,11 @@ If you're having trouble or have questions about using `gizmo`:
 - **Examples**: Check the example directory to see how a complete research project looks
 - **Start Small**: Try running a simple research question first to get familiar with the tool
 - **Documentation**: Refer to this README for command options and examples
-- **Community**: Join our community forum (coming soon) to connect with other users
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
----
+## Credits
 
-*This README was written by Junie who used the documentation provided by gizmo as a guide.*
+This README was written by Junie who used the documentation provided by gizmo as a guide.
