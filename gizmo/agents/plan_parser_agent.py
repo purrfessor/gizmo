@@ -46,6 +46,7 @@ class PlanParserAgent(Agent):
         3. Use the content of each step as is, don't modify it in any way.
         4. Ensure logical ordering and consistent tone across all steps.
         5. Do not return JSON or unstructured text—return only the formatted Markdown plan.
+        6. Strictly adhere to the number of steps: it should not change, don't add or subtract any steps.
         """
 
         expected_output = """

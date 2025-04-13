@@ -63,7 +63,7 @@ async def run_gpt_researcher_agent(topic: str, step_number: int, memory_dir: str
         </previousStepsSummaries>
     """
 
-    researcher = GPTResearcher(query=query, report_type="research_report")  # "deep"
+    researcher = GPTResearcher(query=query, report_type="deep")
 
     # Generate report asynchronously
     report = await researcher.write_report()

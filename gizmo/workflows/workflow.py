@@ -168,7 +168,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
                     summarizer_response = run_step_summarizer_agent(research_report, i, memory_dir)
                     usage_accumulator.record(summarizer_response)
                     summarizer_time = time.time() - summarizer_start_time
-                    summary = summarizer_response
+                    summary = summarizer_response.content
 
                     # Log summarizer agent metrics if available
                     logger.info(f"Step summarizer agent completed in {summarizer_time:.2f}s")

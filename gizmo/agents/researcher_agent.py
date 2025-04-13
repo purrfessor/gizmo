@@ -107,8 +107,9 @@ def run_researcher_agent(step, search_results, step_number, memory_dir, output_d
         Exception: If the researcher agent fails after retries
     """
     try:
+        plan = read_file(plan_path)
         # Create the researcher agent with access to research toolkit
-        researcher = ResearcherAgent(output_dir, memory_dir, plan_path)
+        researcher = ResearcherAgent(output_dir, memory_dir)
         from gizmo.utils.error_utils import logger
 
         # Prepare the input for the researcher
@@ -118,7 +119,7 @@ def run_researcher_agent(step, search_results, step_number, memory_dir, output_d
         )
 
         if plan_path:
-            researcher_input += f"# General research plan\n\n{read_file(plan_path)}\n\n"
+            researcher_input += f"# General research plan\n\n{plan}\n\n"
 
         # Run the researcher agent
         response = researcher.run(researcher_input)

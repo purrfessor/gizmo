@@ -9,6 +9,7 @@ import os
 
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
+from agno.run.response import RunResponse
 
 from gizmo.utils.error_utils import retry, handle_agent_error
 from gizmo.utils.file_utils import write_file
@@ -122,7 +123,7 @@ def run_step_summarizer_agent(polished_report, step_number, memory_dir):
         memory_dir (str): Directory to save intermediate files
 
     Returns:
-        str: The summary
+        RunResponse: The summary
 
     Raises:
         Exception: If the step summarizer agent fails after retries
