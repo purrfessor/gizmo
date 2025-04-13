@@ -1,9 +1,9 @@
 """
 Writer Agent for Gizmo.
 
-This module defines the Writer Agent, which is responsible for taking
-the researcher's output and rewriting or polishing it for clarity,
-style, and coherence.
+This module defines the Writer Agent, which takes the researcher's output and rewrites or polishes it
+for clarity, coherence, structure, and readability. It ensures technical content is presented cleanly
+and professionally without altering meaning or facts.
 """
 import os
 
@@ -24,30 +24,33 @@ class WriterAgent(Agent):
         """
 
         description = """
-            The Writer Agent is a specialized editing assistant designed to refine and polish content.
-            It improves the clarity, structure, and readability of technical content while preserving
-            all factual information and maintaining the original meaning.
+        The Writer Agent is a specialized editorial assistant responsible for refining the researcher's output. 
+        It enhances clarity, coherence, and style while preserving the original meaning and factual accuracy. 
+        The agent writes in a professional, structured, and readable tone, improving grammar, flow, and formatting.
         """
 
         instructions = """
-            You are a technical writer. Your task is to refine and polish content.
-            Rewrite and polish the given content into a clear, well-structured Markdown document.
-            Improve fluency and fix any grammatical issues, but do not change factual content.
-            Use headings, bullet points, or tables where appropriate to enhance readability.
-            Ensure the document has a professional tone and flows logically.
-            Maintain all citations and references from the original text.
-            Focus on clarity, coherence, and readability while preserving all information.
+        You are a professional technical writer and editor.
+
+        1. Review the provided content carefully.
+        2. Rewrite and polish the text to improve clarity, grammar, and logical flow.
+        3. Maintain the original meaning and all factual information.
+        4. Use Markdown formatting to enhance structure and readability (e.g., with headings, bullet points, or tables).
+        5. Ensure a professional and polished tone throughout.
+        6. Do not omit citations or references; preserve all source attributions.
+
+        Your edits should make the text easier to read, without losing nuance or correctness.
         """
 
         expected_output = """
-            Your output should be a polished Markdown document that:
+        Your output should be a clean, well-structured Markdown document that:
 
-            - Has improved clarity, structure, and readability
-            - Maintains all factual content from the original
-            - Uses appropriate formatting (headings, bullet points, tables) to enhance readability
-            - Has a professional tone and logical flow
-            - Preserves all citations and references
-            - Is free of grammatical errors and awkward phrasing
+        - Improves clarity, coherence, and grammar
+        - Maintains all original facts and intentions
+        - Uses professional tone and logical structure
+        - Applies proper Markdown formatting (headings, lists, etc.)
+        - Preserves all citations and references
+        - Is suitable for inclusion in a final report or publication
         """
 
         super().__init__(

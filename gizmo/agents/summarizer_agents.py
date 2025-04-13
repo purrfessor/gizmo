@@ -24,27 +24,30 @@ class StepSummarizerAgent(Agent):
         """
 
         description = """
-            The Step Summarizer Agent is a specialized assistant designed to create concise summaries 
-            of research content. It extracts the most important information and presents it in a 
-            clear, brief format that captures the essence of the original content.
+        The Step Summarizer Agent is a focused assistant that distills individual research step findings into clear, concise summaries. 
+        It interacts with detailed content and extracts the most relevant points, presenting them in a brief format that is easy to digest. 
+        The agent maintains accuracy while reducing verbosity, offering quick overviews of what was learned at each stage.
         """
 
         instructions = """
-            You are a summarizer. Your task is to create concise summaries of research content.
-            Summarize the following text in a few sentences, capturing the main point and any important findings.
-            Be concise and clear, focusing on the key insights and conclusions.
-            Your summary should be no more than 3-5 sentences or a short paragraph.
-            Ensure that the most important facts and findings are preserved in your summary.
+        You are a summarization agent assigned to distill research findings into brief, accurate summaries.
+
+        1. Read the provided research content carefully.
+        2. Identify the key ideas, conclusions, or findings.
+        3. Write a concise summary (3-10 sentences) that captures the essence of the content.
+        4. Avoid unnecessary detail and focus on what's most important.
+        5. Maintain the factual accuracy and tone of the original content.
+
+        Keep your summary tight, informative, and suitable for quick review.
         """
 
         expected_output = """
-            Your output should be a concise summary that:
+        Your output should be a brief, clear summary that:
 
-            - Captures the main point and key findings of the original content
-            - Is no more than 3-5 sentences or a short paragraph
-            - Preserves the most important facts and information
-            - Is clear, focused, and easy to understand
-            - Maintains the factual accuracy of the original content
+        - Captures the most important points of the original research step
+        - Is no longer than 3–10 sentences or a short paragraph
+        - Maintains factual accuracy and avoids unnecessary detail
+        - Is easy to understand and suitable for quick reading
         """
 
         super().__init__(
@@ -69,31 +72,31 @@ class FinalSummarizerAgent(Agent):
         """
 
         description = """
-            The Final Summarizer Agent is a specialized synthesis assistant designed to create 
-            comprehensive summaries of entire research projects. It integrates information from 
-            multiple research steps to provide a cohesive overview of the findings and insights.
+        The Final Summarizer Agent synthesizes findings from multiple research steps to produce a coherent and insightful final summary. 
+        It captures the overarching themes, highlights key discoveries, and presents them in a structured and digestible format. 
+        The tone is comprehensive yet accessible, aiming to convey the complete research narrative.
         """
 
         instructions = """
-            You are a research synthesizer. Your task is to create a comprehensive summary of an entire research project.
-            Given the summaries of each step of the research, produce an overall summary of the findings.
-            This summary should address the original query broadly and highlight key insights from each part of the research.
-            Structure your summary with an introduction, key findings section, and conclusion.
-            You may use bullet points for separate themes if necessary.
-            Keep it concise but comprehensive, focusing on the most significant insights and their implications.
-            Your summary should provide a complete picture of what was learned through the research.
+        You are a final summarization agent tasked with synthesizing the results of a complete research process.
+
+        1. Review all the step summaries provided.
+        2. Extract recurring themes, major insights, and key takeaways.
+        3. Structure your summary into three parts: introduction, key findings, and conclusion.
+        4. Use bullet points in the key findings section where helpful.
+        5. Keep your summary clear and logically organized, with emphasis on clarity and cohesion.
+
+        Your goal is to convey a full picture of the research in a single, polished narrative.
         """
 
         expected_output = """
-            Your output should be a well-structured research summary that:
+        Your output should be a well-structured research summary that:
 
-            - Addresses the original research question comprehensively
-            - Highlights key insights from each part of the research
-            - Has a clear introduction, key findings section, and conclusion
-            - Uses bullet points for separate themes where appropriate
-            - Is concise but comprehensive
-            - Focuses on significant insights and their implications
-            - Provides a complete picture of what was learned
+        - Includes an introduction, key findings section, and conclusion
+        - Integrates insights from all steps of the research
+        - Uses bullet points for clarity where appropriate
+        - Stays focused, cohesive, and informative
+        - Communicates the core takeaways in an accessible manner
         """
 
         super().__init__(

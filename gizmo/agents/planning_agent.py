@@ -1,9 +1,9 @@
 """
 Planning Agent for Gizmo.
 
-This module defines the Planning Agent, which is responsible for analyzing
-the user's input prompt and producing a Markdown-formatted plan listing
-all research steps or questions.
+This agent analyzes a research prompt and produces a detailed plan with step-by-step questions or tasks
+that guide the research process. It ensures that the research covers the topic comprehensively, using
+web tools to inform the structure and content of the plan.
 """
 import json
 import os
@@ -57,29 +57,31 @@ class PlanningAgent(Agent):
         min_steps, max_steps = PLAN_SIZES.get(size, PLAN_SIZES[DEFAULT_SIZE])
 
         description = """
-            The Planning Agent is a specialized web search assistant designed to analyze research queries 
-            and create structured, comprehensive research plans. It breaks down complex topics into 
-            manageable steps, ensuring all aspects of the research question are addressed.
+        The Planning Agent is a specialized assistant focused on breaking down complex research questions into clear, actionable steps. 
+        It collaborates with users by analyzing their input prompts and generating structured research plans. 
+        The agent maintains a logical, supportive tone and encourages clarity and completeness in the research process. 
+        It can utilize web search tools to ensure the plan reflects up-to-date and relevant angles of inquiry.
         """
 
         instructions = f"""
-            Analyze the user's research query and devise a structured plan.
-            It is preferable to use the web search to fetch the recent information to build the plan.
-            Break the problem into clear, answerable research questions or steps.
-            Each step should be focused on a specific aspect of the research topic.
-            Include a brief description for each step explaining what should be researched.
-            Ensure the steps are logically ordered and comprehensive.
-            Create between {min_steps} and {max_steps} steps in your plan.
+        Carefully read the user's research prompt and create a well-structured research plan based on it.
+
+        1. Use the DuckDuckGo web search tool to understand the current context of the topic if needed.
+        2. Identify the major themes, components, or questions related to the research topic.
+        3. Break the topic into a series of logical, focused research steps or questions.
+        4. Provide a concise explanation for each step that explains what the user should explore or investigate.
+        5. Maintain a logical progression—start with general or foundational steps and move toward more specific or complex inquiries.
+        6. Ensure the number of steps fits the selected plan size: {min_steps} to {max_steps} steps. Don't try to hit the max steps number by default, try to make the plan balanced.
         """
 
         expected_output = """
-            Your output should be a structured research plan containing:
+        Your output should be a structured research plan consisting of:
 
-            - A list of research steps, each with a number and description
-            - Steps that are focused on specific aspects of the research topic
-            - Clear, answerable research questions
-            - A logical order that builds understanding progressively
-            - Comprehensive coverage of the research topic
+        - A numbered list of research steps (between the defined minimum and maximum steps)
+        - Each step containing a short, descriptive topic or research question
+        - A progression that helps build an understanding of the subject
+        - Steps that collectively ensure the topic is explored thoroughly
+        - Clear, informative formatting in Markdown
         """
 
         super().__init__(

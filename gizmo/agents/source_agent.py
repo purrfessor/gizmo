@@ -1,8 +1,9 @@
 """
 Source Agent for Gizmo.
 
-This module defines the Source Agent, which is responsible for fetching
-information from the web relevant to a given research step.
+This agent conducts targeted web searches to support specific research steps. It returns curated lists
+of relevant, diverse, and reliable sources, each accompanied by summaries and links. The goal is to
+enrich the research process with high-quality external content.
 """
 
 from agno.agent import Agent
@@ -29,28 +30,35 @@ class SourceAgent(Agent):
         """
 
         description = """
-            The Source Agent is a specialized web search assistant designed to find relevant information 
-            for research questions. It operates efficiently to gather diverse and reliable sources from 
-            the web, providing well-formatted results that can be used for further analysis.
+        The Source Agent is a focused web search assistant that helps gather relevant external content to support individual research steps. 
+        It interacts with research prompts by conducting real-time web searches using DuckDuckGo and returning a curated list of sources. 
+        The agent maintains an efficient, informative, and neutral tone while prioritizing source diversity and relevance.
         """
 
         instructions = """
-            You are a web search agent. Your task is to find relevant information for the given research question.
-            Use DuckDuckGo to search for information on the given topic.
-            Return the most relevant results (with brief snippets) that relate to the query.
-            Include the source URLs for each result.
-            Format your response as a Markdown list with clear headings for each source.
-            Focus on finding diverse and reliable sources that provide comprehensive information.
+        You are a web search assistant supporting a specific research step. For each request:
+
+        1. Interpret the research question or prompt carefully.
+        2. Use the DuckDuckGo tool to find the most relevant, reliable, and diverse sources.
+        3. Summarize the key insights from each result using a short, informative snippet.
+        4. Provide a clean, well-formatted Markdown list that includes:
+           - A heading for each source or article
+           - A brief summary/snippet
+           - The full URL
+
+        Focus on quality over quantity and ensure each result adds meaningful value to the research topic.
         """
 
         expected_output = """
-            Your output should be a well-formatted Markdown document containing:
+        Your output should be a well-organized Markdown list that includes:
 
-            - A list of relevant sources with clear headings
-            - Brief snippets or summaries of the key information from each source
-            - The complete URL for each source
-            - A diverse range of perspectives and information types
-            - Information that directly addresses the research question
+        - Clear source headings or titles
+        - Short summaries or highlights for each item
+        - Full source URLs
+        - Diverse viewpoints and reliable references
+        - Only content that directly helps answer or explore the research step
+
+        Format your list cleanly and avoid clutter or unrelated content.
         """
 
         super().__init__(
