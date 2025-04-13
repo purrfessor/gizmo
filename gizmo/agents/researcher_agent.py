@@ -88,7 +88,7 @@ class ResearcherAgent(Agent):
         )
 
 @retry(max_attempts=2, delay=1.0)
-def run_researcher_agent(step, search_results, step_number, memory_dir, output_dir, plan_path):
+def run_researcher_agent(step, search_results, step_number, memory_dir, output_dir, plan_path, initial_query=None):
     """
     Run the Researcher Agent for a step.
 
@@ -99,6 +99,7 @@ def run_researcher_agent(step, search_results, step_number, memory_dir, output_d
         memory_dir (str): Directory to save intermediate files
         output_dir (str): Directory containing the output files
         plan_path (str): Path to the plan
+        initial_query (str, optional): Initial query of the research
 
     Returns:
         RunResponse: The analysis
@@ -120,6 +121,9 @@ def run_researcher_agent(step, search_results, step_number, memory_dir, output_d
 
         if plan_path:
             researcher_input += f"# General research plan\n\n{plan}\n\n"
+
+        if initial_query:
+            researcher_input += f"# Initial query\n\n{initial_query}\n\n"
 
         # Run the researcher agent
         response = researcher.run(researcher_input)

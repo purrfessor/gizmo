@@ -22,7 +22,7 @@ class GPTResearcherError(Exception):
 
 
 @retry(max_attempts=2, delay=1.0)
-async def run_gpt_researcher_agent(topic: str, step_number: int, memory_dir: str, output_dir: str, plan: str, previous_steps_summaries: str) -> str:
+async def run_gpt_researcher_agent(topic: str, step_number: int, memory_dir: str, output_dir: str, plan: str, previous_steps_summaries: str, initial_query: str=None) -> str:
     """
     Run the GPT Researcher Agent for a step.
 
@@ -33,6 +33,7 @@ async def run_gpt_researcher_agent(topic: str, step_number: int, memory_dir: str
         output_dir (str): Directory to save output files
         plan (str): The research plan
         previous_steps_summaries (str): The short summaries of the previous research steps results
+        initial_query (str): The initial query of the research
 
     Returns:
         str: The research report
@@ -43,7 +44,7 @@ async def run_gpt_researcher_agent(topic: str, step_number: int, memory_dir: str
 
     query = f"""
         <task>
-            You are an AI deep research assistant. You are performing a step in a bigger research. You need to make a research on the given topic.
+            You are an AI deep research assistant. You are performing a step in a bigger research. You need to make a research on the given topic. Always keep the initial query in mind throughout your research process.
         </task>
 
         <researchTopic>
@@ -53,6 +54,10 @@ async def run_gpt_researcher_agent(topic: str, step_number: int, memory_dir: str
         <currentStepNumber>
             {step_number}
         </currentStepNumber>
+
+        <initialQuery>
+            {initial_query or "Unavailable."}
+        </initialQuery>
 
         <researchPlan>
             {plan}

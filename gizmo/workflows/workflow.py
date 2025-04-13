@@ -57,7 +57,7 @@ class GizmoWorkflow(ABC):
         pass
 
     @abstractmethod
-    async def run_research(self, plan_path, output_dir, memory_dir=".memory", deep=False):
+    async def run_research(self, plan_path, output_dir, memory_dir=".memory", deep=False, initial_input=None):
         """
         Execute a research workflow based on a plan.
 
@@ -66,6 +66,7 @@ class GizmoWorkflow(ABC):
             output_dir (str): Directory to save the output files
             memory_dir (str): Directory to save intermediate files
             deep (bool): Whether to use GPT Researcher for deep research
+            initial_input (str, optional): Initial input for the research
 
         Raises:
             Exception: If the research execution fails
@@ -102,7 +103,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
         # Generate the plan in markdown format
         return run_planning_agent(input_prompt, output_plan_path, is_file, size)
 
-    async def run_research(self, plan_path, output_dir, memory_dir=".memory", deep=False):
+    async def run_research(self, plan_path, output_dir, memory_dir=".memory", deep=False, initial_input=None):
         """
         Execute a research workflow based on a plan.
 
@@ -111,6 +112,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
             output_dir (str): Directory to save the output files
             memory_dir (str): Directory to save intermediate files
             deep (bool): Whether to use GPT Researcher for deep research
+            initial_input (str, optional): Initial input for the research
 
         Raises:
             Exception: If the research execution fails
@@ -156,7 +158,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
                     # Use GPT Researcher for deep research
                     logger.info(f"Running GPT Researcher for deep research...")
                     deep_research_start_time = time.time()
-                    research_report = await run_gpt_researcher_agent(topic, i, memory_dir, output_dir, plan, '\n\n'.join(step_summaries))
+                    research_report = await run_gpt_researcher_agent(topic, i, memory_dir, output_dir, plan, '\n\n'.join(step_summaries), initial_input)
                     deep_research_time = time.time() - deep_research_start_time
 
                     # Log GPT Researcher metrics
@@ -191,7 +193,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
                     # Step 2: Researcher - Analyze the information
                     logger.info(f"Running researcher...")
                     researcher_start_time = time.time()
-                    researcher_response = run_researcher_agent(topic, search_results, i, memory_dir, output_dir, plan_path)
+                    researcher_response = run_researcher_agent(topic, search_results, i, memory_dir, output_dir, plan_path, initial_input)
                     usage_accumulator.record(researcher_response)
                     researcher_time = time.time() - researcher_start_time
                     analysis = researcher_response.content
@@ -300,7 +302,7 @@ def run_plan(input_prompt, output_plan_path, is_file=True, size=None):
     return basic_workflow.run_plan(input_prompt, output_plan_path, is_file, size)
 
 
-async def run_research(plan_path, output_dir, memory_dir=".memory", deep=False):
+async def run_research(plan_path, output_dir, memory_dir=".memory", deep=False, initial_input=None):
     """
     Execute a research workflow based on a plan.
 
@@ -312,6 +314,7 @@ async def run_research(plan_path, output_dir, memory_dir=".memory", deep=False):
         output_dir (str): Directory to save the output files
         memory_dir (str): Directory to save intermediate files
         deep (bool): Whether to use GPT Researcher for deep research
+        initial_input (str, optional): Initial input for the research
 
     Raises:
         Exception: If the research execution fails
@@ -320,4 +323,4 @@ async def run_research(plan_path, output_dir, memory_dir=".memory", deep=False):
     if "RETRIEVER" not in os.environ:
         os.environ["RETRIEVER"] = "duckduckgo"
 
-    return await basic_workflow.run_research(plan_path, output_dir, memory_dir, deep)
+    return await basic_workflow.run_research(plan_path, output_dir, memory_dir, deep, initial_input)

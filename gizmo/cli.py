@@ -77,6 +77,9 @@ def setup_parser():
     research_parser.add_argument(
         "--deep", action="store_true", help="Use GPT Researcher for deep research"
     )
+    research_parser.add_argument(
+        "--initial-input", help="Path to a file containing initial input for the research"
+    )
 
     return parser
 
@@ -152,8 +155,18 @@ def main():
             if not os.path.exists(args.memory):
                 os.makedirs(args.memory)
 
+            # Read initial input file if provided
+            initial_input = None
+            if args.initial_input:
+                if not os.path.exists(args.initial_input):
+                    print(f"Error: Initial input file '{args.initial_input}' does not exist.")
+                    sys.exit(1)
+                with open(args.initial_input, 'r', encoding='utf-8') as f:
+                    initial_input = f.read()
+                print(f"Using initial input from '{args.initial_input}'")
+
             print(f"Executing research based on plan '{args.plan}'...")
-            asyncio.run(run_research(args.plan, args.output, args.memory, args.deep))
+            asyncio.run(run_research(args.plan, args.output, args.memory, args.deep, initial_input))
             print(f"Research completed. Results saved to '{args.output}'")
 
     except Exception as e:
