@@ -7,11 +7,12 @@ This module provides the command-line interface for Gizmo, allowing users to:
 2. Execute a research workflow based on a plan
 
 Usage:
-    gizmo plan [-i <input_file> | -p <prompt>] [-s <step_number>] [-o <output_path>]
+    gizmo plan [-i <input_file> | -p <prompt>] [-s <size>] [-o <output_path>]
     gizmo research [-p <plan_file>] [-o <output_dir>]
 
 Note: For the plan command, either -i or -p must be provided.
-      The -s option allows specifying a target number of steps for the research plan (max: 30).
+      The -s option allows specifying the size of the research plan: small (1-10 steps), 
+      medium (10-30 steps), or large (30-70 steps). Default is small.
       For the -o option, if the path ends with '.md', it writes directly to that file.
       Otherwise, it creates a directory and writes to 'plan.md' inside it.
       For the research command, if -p is not provided, it looks for the plan in './output/plan.md' by default.
@@ -43,7 +44,8 @@ def setup_parser():
         "-p", "--prompt", help="Direct research prompt text"
     )
     plan_parser.add_argument(
-        "-s", "--stepnumber", type=int, help="Target number of steps for the research plan (max: 30)"
+        "-s", "--size", choices=["small", "medium", "large"], default="small",
+        help="Size of the research plan: small (1-10 steps), medium (10-30 steps), large (30-70 steps). Default: small"
     )
     plan_parser.add_argument(
         "-o", "--output", default="output/plan.md",
@@ -122,17 +124,12 @@ def main():
                     os.makedirs(output_dir)
                 output_path = os.path.join(output_dir, "plan.md")
 
-            # Validate step number if provided
-            if args.stepnumber is not None and args.stepnumber <= 0:
-                print("Error: Step number must be a positive integer.")
-                sys.exit(1)
-
             if args.input:
                 print(f"Generating research plan from file '{args.input}'...")
-                run_plan(args.input, output_path, step_number=args.stepnumber)
+                run_plan(args.input, output_path, size=args.size)
             else:
                 print("Generating research plan from provided prompt...")
-                run_plan(args.prompt, output_path, is_file=False, step_number=args.stepnumber)
+                run_plan(args.prompt, output_path, is_file=False, size=args.size)
 
             print(f"Research plan saved to '{output_path}'")
 

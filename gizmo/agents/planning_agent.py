@@ -17,10 +17,14 @@ from pydantic import BaseModel, Field
 from gizmo.utils.error_utils import retry, handle_agent_error, logger
 from gizmo.utils.file_utils import read_file, write_file
 
-# Cap the step number at 30 regardless of input
-max_steps = 50
-# Default step limit if not specified
-default_steps = 15
+# Define step ranges for different plan sizes
+PLAN_SIZES = {
+    "small": (1, 10),  # 1-10 steps
+    "medium": (10, 30),  # 10-30 steps
+    "large": (30, 70),  # 30-70 steps
+}
+# Default size if not specified
+DEFAULT_SIZE = "small"
 
 class ResearchStep(BaseModel):
     step: int = Field(..., description="Step number")
@@ -36,21 +40,21 @@ def _build_tools():
 
 
 class PlanningAgent(Agent):
-    def __init__(self, step_number=None):
+    def __init__(self, size=None):
         """
         Create and configure the Planning Agent.
 
         Args:
-            step_number (int, optional): Target number of steps for the research plan. Defaults to None.
+            size (str, optional): Size of the research plan ("small", "medium", "large"). Defaults to None.
 
         Returns:
             Agent: The configured planning agent
         """
-        # Determine the target number of steps
-        if step_number is not None and step_number > 0:
-            target_steps = min(step_number, max_steps)
-        else:
-            target_steps = default_steps
+        # Determine the target step range based on size
+        if size is None:
+            size = DEFAULT_SIZE
+
+        min_steps, max_steps = PLAN_SIZES.get(size, PLAN_SIZES[DEFAULT_SIZE])
 
         description = """
             The Planning Agent is a specialized web search assistant designed to analyze research queries 
@@ -65,8 +69,7 @@ class PlanningAgent(Agent):
             Each step should be focused on a specific aspect of the research topic.
             Include a brief description for each step explaining what should be researched.
             Ensure the steps are logically ordered and comprehensive.
-            Try to create approximately {target_steps} steps in your plan.
-            The upper limit for the number of steps is {max_steps}.
+            Create between {min_steps} and {max_steps} steps in your plan.
         """
 
         expected_output = """
@@ -94,7 +97,7 @@ class PlanningAgent(Agent):
 
 
 @retry(max_attempts=2, delay=1.0)
-def run_planning_agent(input_prompt, output_plan_path, is_file=True, step_number=None):
+def run_planning_agent(input_prompt, output_plan_path, is_file=True, size=None):
     """
     Run the Planning Agent to generate a research plan.
 
@@ -102,7 +105,7 @@ def run_planning_agent(input_prompt, output_plan_path, is_file=True, step_number
         input_prompt (str): The user's input prompt or path to a file containing the prompt
         output_plan_path (str): Path to save the generated plan
         is_file (bool, optional): Whether input_prompt is a file path. Defaults to True.
-        step_number (int, optional): Target number of steps for the research plan. Defaults to None.
+        size (str, optional): Size of the research plan ("small", "medium", "large"). Defaults to None.
 
     Returns:
         str: The generated plan
@@ -120,7 +123,7 @@ def run_planning_agent(input_prompt, output_plan_path, is_file=True, step_number
             user_prompt = input_prompt
 
         # Create the planning agent
-        plan_agent = PlanningAgent(step_number)
+        plan_agent = PlanningAgent(size)
 
         logger.info("Generating research plan...")
         # Run the planning agent to get the plan
