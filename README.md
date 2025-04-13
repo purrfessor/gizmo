@@ -1,8 +1,23 @@
 # G.I.Z.M.O. - AI-Powered Research Assistant
 
+![Version](https://img.shields.io/badge/version-1.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 `gizmo` is a command-line research assistant that performs in-depth internet research on any topic you're curious about - from academic subjects to everyday questions.
 
-## What Can G.I.Z.M.O. Do For You?
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Features](#features)
+3. [Installation](#installation)
+4. [Usage](#usage)
+5. [Output Files](#output-files)
+6. [How It Works](#how-it-works)
+7. [Example Research Projects](#example-research-projects)
+8. [Troubleshooting](#troubleshooting)
+9. [Getting Help](#getting-help)
+10. [License](#license)
+
+## Introduction
 
 `gizmo` helps you research any topic thoroughly without spending hours searching the web yourself. Simply provide a question or topic, and `gizmo` will:
 
@@ -19,6 +34,7 @@
 - **Easy-to-Read Results**: All research saved as Markdown files you can view in any text editor
 - **Reliable Performance**: Built-in mechanisms to handle connection issues or timeouts
 - **Flexible Usage**: Works with a wide range of research topics and questions
+- **AI-Powered Analysis**: Utilizes advanced AI to process and synthesize information
 
 ## Installation
 
@@ -35,123 +51,148 @@
    cd gizmo
    ```
 
-2. Create the venv and install the package:
+2. Create a virtual environment and install the package:
    ```bash
+   # For macOS/Linux
    python3 -m venv .venv
    source .venv/bin/activate
    pip3 install -e .
+
+   # For Windows
+   python -m venv .venv
+   .venv\Scripts\activate
+   pip install -e .
    ```
 
 3. Set your OpenAI API key:
    ```bash
+   # For macOS/Linux
    export OPENAI_API_KEY='your-api-key'
+
+   # For Windows (Command Prompt)
+   set OPENAI_API_KEY=your-api-key
+
+   # For Windows (PowerShell)
+   $env:OPENAI_API_KEY='your-api-key'
    ```
+
+> 💡 **Tip**: For persistent configuration, consider adding your API key to your environment variables or creating a `.env` file in the project root.
 
 ## Usage
 
-Using `gizmo` is a simple two-step process: first, 
+Using `gizmo` is a simple two-step process:
 
-### Step 1: Generate a Research Plan
+### Step 1: Generate a Research Plan 📝
 
-First, you'll need to create a research plan by providing your question or topic:
+First, create a research plan by providing your question or topic:
 
 ```bash
 gizmo plan [-i <input_file> | -p <prompt>] [-s <size>] [-o <output_file>]
 ```
 
-Options explained:
-- `-i, --input`: Path to a text file containing your research question
-- `-p, --prompt`: Type your research question directly in the command
-- `-s, --size`: Size of the research plan: small (1-10 steps), medium (10-30 steps), large (30-70 steps). Default: small
-- `-o, --output`: Where to save your research plan
+#### Options:
+| Option | Description |
+|--------|-------------|
+| `-i, --input` | Path to a text file containing your research question |
+| `-p, --prompt` | Type your research question directly in the command |
+| `-s, --size` | Size of the research plan: small (1-10 steps), medium (10-30 steps), large (30-70 steps). Default: small |
+| `-o, --output` | Where to save your research plan |
 
-Note: You must provide either `-i` or `-p` to specify your research question.
+> **Note**: You must provide either `-i` or `-p` to specify your research question.
 
-Examples:
+#### Examples:
+
 ```bash
 # If you have your question in a file:
 gizmo plan -i my_question.txt -o research_plan.md
 
-# If you want to type your question directly with a custom output path:
-gizmo plan -p "What are the environmental and economic impacts of vertical farming?" -o research_plan.md
+# If you want to type your question directly:
+gizmo plan -p "What are the environmental impacts of vertical farming?" -o research_plan.md
 
-# If you want to specify a medium-sized research plan:
-gizmo plan -p "How do different dog breeds compare as family pets?" -s medium -o dog_research_plan.md
+# For a medium-sized research plan:
+gizmo plan -p "How do different dog breeds compare as family pets?" -s medium -o dog_plan.md
 
-# If you want a large research plan with many steps:
-gizmo plan -p "What are the most effective study techniques for college students?" -s large -o study_plan.md
-
-# Create a plan from a question file and save to a specific directory:
-gizmo plan -i travel_question.txt -o travel_research/plan.md
+# For a large, comprehensive research plan:
+gizmo plan -p "What are effective study techniques for college students?" -s large -o study_plan.md
 ```
 
 ### Viewing and Editing Your Research Plan
 
-After creating your plan, you might want to review or modify it:
+After creating your plan, you can review or modify it:
 
 ```bash
 # View your research plan:
 cat research_plan.md
 
-# Edit your plan if needed (using your preferred text editor):
-nano research_plan.md  # or vim, emacs, etc.
-
-# Count the number of research steps in your plan:
-grep -c "^[0-9]" research_plan.md
+# Edit your plan if needed:
+nano research_plan.md  # or use your preferred text editor
 ```
 
-### Step 2: Execute the Research
+### Step 2: Execute the Research 🔍
 
-Once you have a research plan, you can start the research process:
+Once you have a research plan, start the research process:
 
 ```bash
 gizmo research -p <plan_file> -o <output_dir> -m <memory_dir>
 ```
 
-Options explained:
-- `-p, --plan`: Your research plan file from Step 1
-- `-o, --output`: Folder where your final research documents will be saved (default: `output`)
-- `-m, --memory`: Folder for temporary files created during research (default: `.memory`)
+#### Options:
+| Option | Description |
+|--------|-------------|
+| `-p, --plan` | Your research plan file from Step 1 |
+| `-o, --output` | Folder where your final research documents will be saved (default: `output`) |
+| `-m, --memory` | Folder for temporary files created during research (default: `.memory`) |
 
-Examples:
+#### Examples:
+
 ```bash
 # Basic research execution:
 gizmo research -p research_plan.md -o my_research_results
 
-# Specifying a custom memory directory:
+# With custom memory directory:
 gizmo research -p farming_plan.md -o farming_research -m farming_memory
 
-# Running research with default output directory (creates 'output' folder):
+# Using default output directory:
 gizmo research -p dog_research_plan.md
-
-# Running research and specifying both output and memory directories:
-gizmo research -p space_plan.md -o space_research -m space_memory
 ```
 
-### Working with Output Files
+### Working with Output Files 📄
 
-After running your research, you can view the results:
+After running your research, view the results:
 
 ```bash
-# List all files in your output directory:
-ls my_research_results
-
 # View your final summary:
 cat my_research_results/summary_final.md
 
 # View a specific research step:
 cat my_research_results/step1.md
 
-# Open all research files in your default text editor (example for macOS):
+# Open all research files (macOS example):
 open my_research_results/*.md
-
-# Count how many research steps were completed:
-ls my_research_results/step*.md | wc -l
 ```
+
+> 💡 **Tip**: The summary_final.md file contains the comprehensive overview of all research findings and is a great place to start reviewing your results.
 
 ## Output Files
 
 `gizmo` creates several types of files during the research process:
+
+### File Structure Overview
+
+```
+project/
+├── .memory/                  # Working files (temporary)
+│   ├── stepX_search.md       # Raw information from web searches
+│   ├── stepX_analysis.md     # Analysis of collected information
+│   └── stepX_summary.md      # Brief summary of findings
+│
+└── output/                   # Final research results
+    ├── plan.md               # Your research plan
+    ├── step1.md              # Detailed report for step 1
+    ├── step2.md              # Detailed report for step 2
+    ├── ...                   # Additional step reports
+    └── summary_final.md      # Comprehensive summary of all findings
+```
 
 ### Memory Files (Working Files)
 
@@ -173,9 +214,27 @@ All files are in Markdown format (.md), which you can open with any text editor 
 
 `gizmo` works by breaking down your research question into manageable steps, then researching each step thoroughly:
 
-1. First, it analyzes your question and creates a structured research plan
-2. Then it searches for information about each part of your plan
-3. Finally, it organizes everything into well-written reports and a comprehensive summary
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│                 │     │                 │     │                 │
+│  Your Research  │     │  AI-Generated   │     │  Web Research   │
+│    Question     │ ──► │  Research Plan  │ ──► │  & Analysis     │
+│                 │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └────────┬────────┘
+                                                         │
+                                                         ▼
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│                 │     │                 │     │                 │
+│  Final Summary  │ ◄── │  Step-by-Step   │ ◄── │  Information    │
+│    Report       │     │    Reports      │     │  Organization   │
+│                 │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+1. **Analysis**: It analyzes your question and creates a structured research plan
+2. **Research**: It searches for information about each part of your plan
+3. **Synthesis**: It organizes everything into well-written reports
+4. **Summary**: It creates a comprehensive summary of all findings
 
 ## Example Research Projects
 
@@ -231,20 +290,29 @@ This example demonstrates how `gizmo` approaches even unusual research topics in
 
 If you run into any issues:
 
-- **API Key Problems**: Make sure you've correctly set your OpenAI API key as shown in the installation section
-- **"Too Many Requests" Errors**: OpenAI may limit how quickly you can make requests. Try:
-  - Using a smaller research plan size (use `-s small` instead of medium or large)
-  - Waiting a few minutes before trying again
-  - Breaking your research into smaller projects
-- **Disk Space**: For very large research projects, check the size of the `.memory` directory and delete it if needed after your research is complete
+### Common Problems and Solutions
+
+| Problem | Solution |
+|---------|----------|
+| **API Key Errors** | Ensure your OpenAI API key is correctly set as shown in the installation section |
+| **"Too Many Requests"** | OpenAI may limit request frequency. Try using a smaller plan size (`-s small`), waiting a few minutes, or breaking your research into smaller projects |
+| **Disk Space Issues** | For large research projects, check the size of the `.memory` directory and delete it if needed after your research is complete |
+| **Slow Performance** | Consider using a smaller research plan size or breaking your research into multiple smaller projects |
+| **Network Errors** | Check your internet connection and try again. Gizmo has built-in retry mechanisms for temporary network issues |
 
 ## Getting Help
 
 If you're having trouble or have questions about using `gizmo`:
-- Check the example directory to see how a complete research project looks
-- Try running a simple research question first to get familiar with the tool
-- Refer to this README for command options and examples
+
+- **Examples**: Check the example directory to see how a complete research project looks
+- **Start Small**: Try running a simple research question first to get familiar with the tool
+- **Documentation**: Refer to this README for command options and examples
+- **Community**: Join our community forum (coming soon) to connect with other users
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+*This README was written by Junie who used the documentation provided by gizmo as a guide.*
