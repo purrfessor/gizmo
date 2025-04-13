@@ -27,6 +27,7 @@ class WriterAgent(Agent):
         The Writer Agent is a specialized editorial assistant responsible for refining the researcher's output. 
         It enhances clarity, coherence, and style while preserving the original meaning and factual accuracy. 
         The agent writes in a professional, structured, and readable tone, improving grammar, flow, and formatting.
+        The agent also uses mermaid diagrams for illustrating the data provided when necessary. 
         """
 
         instructions = """
