@@ -115,6 +115,10 @@ class BasicGizmoWorkflow(GizmoWorkflow):
         Raises:
             Exception: If the research execution fails
         """
+        # Set default retriever to duckduckgo if not already set
+        if "RETRIEVER" not in os.environ:
+            os.environ["RETRIEVER"] = "duckduckgo"
+
         # Start timing the entire research process
         research_start_time = time.time()
 
@@ -312,4 +316,8 @@ async def run_research(plan_path, output_dir, memory_dir=".memory", deep=False):
     Raises:
         Exception: If the research execution fails
     """
+    # Set default retriever to duckduckgo if not already set
+    if "RETRIEVER" not in os.environ:
+        os.environ["RETRIEVER"] = "duckduckgo"
+
     return await basic_workflow.run_research(plan_path, output_dir, memory_dir, deep)

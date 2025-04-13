@@ -65,17 +65,18 @@ async def run_gpt_researcher_agent(topic: str, step_number: int, memory_dir: str
 
     researcher = GPTResearcher(query=query, report_type="research_report")  # "deep"
 
-    # Conduct research asynchronously
-    research_result = await researcher.conduct_research()
-
     # Generate report asynchronously
     report = await researcher.write_report()
 
     # Get additional information
-    research_context = researcher.get_research_context()
     research_costs = researcher.get_costs()
-    research_images = researcher.get_research_images()
-    research_sources = researcher.get_research_sources()
+
+    # Save the report to a file
+    step_result_file = os.path.join(output_dir, f"step{step_number}.md")
+    write_file(step_result_file, report)
+
+    # Print the costs
+    logger.info(f"GPT Researcher costs: {research_costs:.4f}$")
 
     # Return the actual report instead of placeholder
     return report

@@ -73,6 +73,7 @@ class PlanningAgent(Agent):
         - A progression that helps build an understanding of the subject
         - Steps that collectively ensure the topic is explored thoroughly
         - Clear, informative formatting in Markdown
+        - Only use the numbered lists for the overall plan and never use them inside any step
         """
 
         super().__init__(
