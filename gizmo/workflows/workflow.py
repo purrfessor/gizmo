@@ -3,7 +3,8 @@ Workflow orchestration for Gizmo.
 
 This module implements the core workflow for Gizmo, including:
 1. Planning phase - Generate a research plan from a prompt
-2. Research phase - Execute a multi-agent research workflow based on a plan
+2. Plan parsing phase - Parse the plan into structured format
+3. Research phase - Execute a multi-agent research workflow based on a plan
 
 The workflow includes:
 1. Direct inclusion of the research plan in the researcher agent's instructions
@@ -17,6 +18,7 @@ import time
 from abc import ABC, abstractmethod
 
 from gizmo.agents.planning_agent import run_planning_agent
+from gizmo.agents.plan_parser_agent import run_plan_parser_agent
 from gizmo.agents.researcher_agent import run_researcher_agent
 from gizmo.agents.source_agent import run_source_agent
 from gizmo.agents.summarizer_agents import run_step_summarizer_agent, run_final_summarizer_agent
@@ -81,7 +83,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
     @retry(max_attempts=3, delay=2.0)
     def run_plan(self, input_prompt, output_plan_path, is_file=True, size=None):
         """
-        Generate a research plan from a prompt.
+        Generate a research plan from a prompt and parse it into structured format.
 
         Args:
             input_prompt (str): Path to the input prompt file or the prompt text itself
@@ -95,6 +97,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
         Raises:
             Exception: If the plan generation fails after retries
         """
+        # Generate the plan in markdown format
         return run_planning_agent(input_prompt, output_plan_path, is_file, size)
 
     def run_research(self, plan_path, output_dir, memory_dir=".memory"):
@@ -120,7 +123,10 @@ class BasicGizmoWorkflow(GizmoWorkflow):
         ensure_dir(output_dir)
 
         # Parse the plan file to get the list of steps
-        steps = parse_plan_file(plan_path)
+        logger.info("Reading research plan...")
+        plan_response = run_plan_parser_agent(plan_path)
+        usage_accumulator.record(plan_response)
+        steps = plan_response.content.steps
 
         logger.info(f"Parsed {len(steps)} research steps from plan")
 
@@ -128,7 +134,9 @@ class BasicGizmoWorkflow(GizmoWorkflow):
         step_summaries = []
 
         # Process each step in the plan
-        for i, step in enumerate(steps, start=1):
+        for step in enumerate(steps, start=1):
+            i = step[1].step
+            topic = step[1].topic
             step_num = f"step #{i}"
             # Set the step context for logging
             set_step_context(i)
@@ -139,7 +147,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
                 # Step 1: Source - Search the web for information
                 logger.info(f"Running source agent...")
                 source_start_time = time.time()
-                source_response = run_source_agent(step, i, memory_dir)
+                source_response = run_source_agent(topic, i, memory_dir)
                 usage_accumulator.record(source_response)
                 source_time = time.time() - source_start_time
                 search_results = source_response
@@ -150,7 +158,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
                 # Step 2: Researcher - Analyze the information
                 logger.info(f"Running researcher...")
                 researcher_start_time = time.time()
-                researcher_response = run_researcher_agent(step, search_results, i, memory_dir, output_dir, plan_path)
+                researcher_response = run_researcher_agent(topic, search_results, i, memory_dir, output_dir, plan_path)
                 usage_accumulator.record(researcher_response)
                 researcher_time = time.time() - researcher_start_time
                 analysis = researcher_response

@@ -22,7 +22,7 @@ import argparse
 import os
 import sys
 
-from gizmo.workflow import run_plan, run_research
+from gizmo.workflows.workflow import run_plan, run_research
 
 
 def setup_parser():
@@ -60,7 +60,7 @@ def setup_parser():
         "research", help="Execute a research workflow based on a plan"
     )
     research_parser.add_argument(
-        "-p", "--plan", default="./output/.plan.json", help="Input file containing the research plan (default: ./output/plan.md)"
+        "-p", "--plan", default="./output/plan.md", help="Input file containing the research plan (default: ./output/plan.md)"
     )
     research_parser.add_argument(
         "-o", "--output", default="output", help="Output directory for research results (default: output)"

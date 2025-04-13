@@ -5,14 +5,12 @@ This agent analyzes a research prompt and produces a detailed plan with step-by-
 that guide the research process. It ensures that the research covers the topic comprehensively, using
 web tools to inform the structure and content of the plan.
 """
-import json
 import os
 from typing import List
 
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from agno.tools.duckduckgo import DuckDuckGoTools
-from pydantic import BaseModel, Field
 
 from gizmo.utils.error_utils import retry, handle_agent_error, logger
 from gizmo.utils.file_utils import read_file, write_file
@@ -25,13 +23,6 @@ PLAN_SIZES = {
 }
 # Default size if not specified
 DEFAULT_SIZE = "small"
-
-class ResearchStep(BaseModel):
-    step: int = Field(..., description="Step number")
-    topic: str = Field(..., description="Provide step details: what needs to be done, what needs to be researched, what information needs to be provided.")
-
-class Plan(BaseModel):
-    steps: List[ResearchStep] = Field(..., description="Provide research steps list.")
 
 
 def _build_tools():
@@ -92,8 +83,6 @@ class PlanningAgent(Agent):
             description=description,
             instructions=instructions,
             expected_output=expected_output,
-            structured_outputs=True,
-            response_model=Plan,
             markdown=True
         )
 
@@ -129,47 +118,11 @@ def run_planning_agent(input_prompt, output_plan_path, is_file=True, size=None):
 
         logger.info("Generating research plan...")
         # Run the planning agent to get the plan
-        plan_result = plan_agent.run(user_prompt).content
+        plan_markdown = plan_agent.run(user_prompt).content
 
-        try:
-            # Check if the result is a Plan object or a string
-            if hasattr(plan_result, 'steps'):
-                # It's a Plan object, convert it to a list of dictionaries
-                plan_data = [{"step": step.step, "topic": step.topic} for step in plan_result.steps]
-                # Convert to JSON string for storage
-                plan_json = json.dumps(plan_data)
-            else:
-                # It's a string (content), try to parse it as JSON
-                plan_json = plan_result.content
-                plan_data = json.loads(plan_json)
+        # Write the Markdown plan to the output file
+        write_file(output_plan_path, plan_markdown)
 
-            # Convert the data to Markdown for backward compatibility
-            plan_markdown = "# Research Plan\n\n"
-            for item in plan_data:
-                step_num = item.get("step", 0)
-                topic = item.get("topic", "")
-                plan_markdown += f"{step_num}. {topic}\n\n"
-
-            # Write both the JSON and Markdown versions to the output file
-            write_file(output_plan_path, plan_markdown)
-
-            # Also save the raw JSON to a file with the same name but .json extension and add a '.' at the beginning
-            # Split the path into directory and filename
-            dir_path, filename = os.path.split(output_plan_path)
-            # Replace .md with .json and add a '.' at the beginning of the filename
-            if filename.endswith(".md"):
-                json_filename = "." + filename.replace(".md", ".json")
-            else:
-                json_filename = "." + filename + ".json"
-            # Join the directory path and the new filename
-            json_path = os.path.join(dir_path, json_filename)
-            write_file(json_path, plan_json)
-
-            return plan_markdown
-        except json.JSONDecodeError as e:
-            # If JSON parsing fails, assume the output is already in Markdown format
-            logger.warning(f"Could not parse plan as JSON. Using raw output: {str(e)}")
-            write_file(output_plan_path, plan_json)
-            return plan_json
+        return plan_markdown
     except Exception as e:
         return handle_agent_error("Planning", 0, e)
