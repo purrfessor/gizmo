@@ -11,7 +11,7 @@ from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from agno.tools.duckduckgo import DuckDuckGoTools
 
-from gizmo.utils.research_toolkit import ResearchToolkit
+from tools.research_toolkit import ResearchContextToolkit
 from gizmo.utils.error_utils import retry, handle_agent_error
 from gizmo.utils.file_utils import read_file, write_file
 
@@ -21,7 +21,7 @@ def _build_tools(output_dir, memory_dir, plan_path):
 
     # Add research toolkit if directories are provided
     if output_dir and memory_dir:
-        research_toolkit = ResearchToolkit(output_dir, memory_dir, plan_path)
+        research_toolkit = ResearchContextToolkit(output_dir, memory_dir, plan_path)
         tools.append(research_toolkit)
 
     return tools

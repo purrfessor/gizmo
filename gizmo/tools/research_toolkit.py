@@ -1,5 +1,5 @@
 """
-Research Toolkit for Gizmo.
+Research Context Toolkit for Gizmo.
 
 This module provides a toolkit for reading files in the research output directory.
 It allows the researcher agent to access previous research results and the plan.
@@ -13,12 +13,12 @@ from agno.tools.toolkit import Toolkit
 from gizmo.utils.file_utils import read_file
 
 
-class ResearchToolkit(Toolkit):
+class ResearchContextToolkit(Toolkit):
     """Toolkit for reading files in the research output directory."""
 
     def __init__(self, output_dir: str, memory_dir: str, plan_path: Optional[str] = None):
         """
-        Initialize the Research Toolkit.
+        Initialize the ResearchContextToolkit.
 
         Args:
             output_dir (str): Directory containing the output files
