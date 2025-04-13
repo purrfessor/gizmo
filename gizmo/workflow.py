@@ -20,7 +20,7 @@ from gizmo.agents.researcher_agent import run_researcher_agent
 from gizmo.agents.source_agent import run_source_agent
 from gizmo.agents.summarizer_agents import run_step_summarizer_agent, run_final_summarizer_agent
 from gizmo.agents.writer_agent import run_writer_agent
-from gizmo.utils.error_utils import retry, log_error, logger
+from gizmo.utils.error_utils import retry, log_error, logger, set_step_context, clear_step_context
 from gizmo.utils.file_utils import write_file, ensure_dir, parse_plan_file
 
 
@@ -77,56 +77,58 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
     # Process each step in the plan
     for i, step in enumerate(steps, start=1):
         step_num = f"step #{i}"
+        # Set the step context for logging
+        set_step_context(i)
         logger.info(f"Processing {step_num}: {step}")
         step_start_time = time.time()
 
         try:
             # Step 1: Source - Search the web for information
-            logger.info(f"Running source agent for {step_num}...")
+            logger.info(f"Running source agent...")
             source_start_time = time.time()
             source_response = run_source_agent(step, i, memory_dir)
             source_time = time.time() - source_start_time
             search_results = source_response
 
             # Log source agent metrics if available
-            logger.info(f"Source agent for {step_num} completed in {source_time:.2f}s")
+            logger.info(f"Source agent completed in {source_time:.2f}s")
 
             # Step 2: Researcher - Analyze the information
-            logger.info(f"Running researcher for {step_num}...")
+            logger.info(f"Running researcher...")
             researcher_start_time = time.time()
             researcher_response = run_researcher_agent(step, search_results, i, memory_dir, output_dir, plan_path)
             researcher_time = time.time() - researcher_start_time
             analysis = researcher_response
 
             # Log researcher agent metrics if available
-            logger.info(f"Researcher agent for {step_num} completed in {researcher_time:.2f}s")
+            logger.info(f"Researcher agent completed in {researcher_time:.2f}s")
 
             # Step 3: Writer - Polish the analysis
-            logger.info(f"Running writer for {step_num}...")
+            logger.info(f"Running writer...")
             writer_start_time = time.time()
             writer_response = run_writer_agent(analysis, i, output_dir)
             writer_time = time.time() - writer_start_time
             polished_report = writer_response
 
             # Log writer agent metrics if available
-            logger.info(f"Writer agent for {step_num} completed in {writer_time:.2f}s")
+            logger.info(f"Writer agent completed in {writer_time:.2f}s")
 
             # Step 4: Step Summarizer - Summarize the step
-            logger.info(f"Running step summarizer for {step_num}...")
+            logger.info(f"Running step summarizer...")
             summarizer_start_time = time.time()
             summarizer_response = run_step_summarizer_agent(polished_report, i, memory_dir)
             summarizer_time = time.time() - summarizer_start_time
             summary = summarizer_response
 
             # Log summarizer agent metrics if available
-            logger.info(f"Step summarizer agent for {step_num} completed in {summarizer_time:.2f}s")
+            logger.info(f"Step summarizer agent completed in {summarizer_time:.2f}s")
 
             # Store the summary for the final summary
             step_summaries.append(f"## Step {i}: {step}\n\n{summary}")
 
             # Log total step metrics
             step_time = time.time() - step_start_time
-            logger.info(f"Step {i} completed in {step_time:.2f}s total")
+            logger.info(f"Step completed in {step_time:.2f}s total")
 
         except Exception as e:
             error_msg = f"Error processing step {i}: {str(e)}"
@@ -140,6 +142,10 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
 
             # Add error to summaries
             step_summaries.append(f"## Step {i}: {step}\n\nError: {str(e)}")
+
+        finally:
+            # Clear the step context after processing
+            clear_step_context()
 
     # Final step: Generate the overall summary
     if step_summaries:
