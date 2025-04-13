@@ -11,7 +11,7 @@ from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from agno.tools.duckduckgo import DuckDuckGoTools
 
-from tools.research_toolkit import ResearchContextToolkit
+from gizmo.tools.research_toolkit import ResearchContextToolkit
 from gizmo.utils.error_utils import retry, handle_agent_error
 from gizmo.utils.file_utils import read_file, write_file
 
@@ -108,6 +108,7 @@ def run_researcher_agent(step, search_results, step_number, memory_dir, output_d
     try:
         # Create the researcher agent with access to research toolkit
         researcher = ResearcherAgent(output_dir, memory_dir, plan_path)
+        from gizmo.utils.error_utils import logger
 
         # Prepare the input for the researcher
         researcher_input = (
@@ -119,7 +120,22 @@ def run_researcher_agent(step, search_results, step_number, memory_dir, output_d
             researcher_input += f"# General research plan\n\n{read_file(plan_path)}\n\n"
 
         # Run the researcher agent
-        analysis = researcher.run(researcher_input).content
+        response = researcher.run(researcher_input)
+        analysis = response.content
+
+        # Log token usage and cost if available
+        try:
+            # Try to access metrics from the response
+            if hasattr(response, 'metrics'):
+                metrics = response.metrics
+                if hasattr(metrics, 'token_usage'):
+                    token_usage = metrics.token_usage
+                    logger.info(f"Researcher agent token usage for step {step_number}: {token_usage}")
+                if hasattr(metrics, 'cost'):
+                    cost = metrics.cost
+                    logger.info(f"Researcher agent estimated cost for step {step_number}: ${cost:.4f}")
+        except Exception as metrics_error:
+            logger.warning(f"Could not extract metrics from researcher agent response: {str(metrics_error)}")
 
         # Save the analysis
         analysis_file = os.path.join(memory_dir, f"step{step_number}_analysis.md")

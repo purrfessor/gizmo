@@ -12,16 +12,16 @@ The workflow includes:
    b. Find relevant information from previous steps
 """
 
-import json
 import os
+import time
 
+from gizmo.agents.planning_agent import run_planning_agent
 from gizmo.agents.researcher_agent import run_researcher_agent
 from gizmo.agents.source_agent import run_source_agent
-from gizmo.agents.planning_agent import run_planning_agent
 from gizmo.agents.summarizer_agents import run_step_summarizer_agent, run_final_summarizer_agent
 from gizmo.agents.writer_agent import run_writer_agent
-from gizmo.utils.error_utils import retry, handle_agent_error, log_error, logger
-from gizmo.utils.file_utils import read_file, write_file, ensure_dir, parse_plan_file, formulate_search_query
+from gizmo.utils.error_utils import retry, log_error, logger
+from gizmo.utils.file_utils import write_file, ensure_dir, parse_plan_file
 
 
 @retry(max_attempts=3, delay=2.0)
@@ -57,6 +57,11 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
     Raises:
         Exception: If the research execution fails
     """
+    # Start timing the entire research process
+    research_start_time = time.time()
+    total_tokens = 0
+    total_cost = 0.0
+
     # Ensure directories exist
     ensure_dir(memory_dir)
     ensure_dir(output_dir)
@@ -73,26 +78,55 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
     for i, step in enumerate(steps, start=1):
         step_num = f"step #{i}"
         logger.info(f"Processing {step_num}: {step}")
+        step_start_time = time.time()
 
         try:
             # Step 1: Source - Search the web for information
             logger.info(f"Running source agent for {step_num}...")
-            search_results = run_source_agent(step, i, memory_dir)
+            source_start_time = time.time()
+            source_response = run_source_agent(step, i, memory_dir)
+            source_time = time.time() - source_start_time
+            search_results = source_response
+
+            # Log source agent metrics if available
+            logger.info(f"Source agent for {step_num} completed in {source_time:.2f}s")
 
             # Step 2: Researcher - Analyze the information
             logger.info(f"Running researcher for {step_num}...")
-            analysis = run_researcher_agent(step, search_results, i, memory_dir, output_dir, plan_path)
+            researcher_start_time = time.time()
+            researcher_response = run_researcher_agent(step, search_results, i, memory_dir, output_dir, plan_path)
+            researcher_time = time.time() - researcher_start_time
+            analysis = researcher_response
+
+            # Log researcher agent metrics if available
+            logger.info(f"Researcher agent for {step_num} completed in {researcher_time:.2f}s")
 
             # Step 3: Writer - Polish the analysis
             logger.info(f"Running writer for {step_num}...")
-            polished_report = run_writer_agent(analysis, i, output_dir)
+            writer_start_time = time.time()
+            writer_response = run_writer_agent(analysis, i, output_dir)
+            writer_time = time.time() - writer_start_time
+            polished_report = writer_response
+
+            # Log writer agent metrics if available
+            logger.info(f"Writer agent for {step_num} completed in {writer_time:.2f}s")
 
             # Step 4: Step Summarizer - Summarize the step
             logger.info(f"Running step summarizer for {step_num}...")
-            summary = run_step_summarizer_agent(polished_report, i, memory_dir)
+            summarizer_start_time = time.time()
+            summarizer_response = run_step_summarizer_agent(polished_report, i, memory_dir)
+            summarizer_time = time.time() - summarizer_start_time
+            summary = summarizer_response
+
+            # Log summarizer agent metrics if available
+            logger.info(f"Step summarizer agent for {step_num} completed in {summarizer_time:.2f}s")
 
             # Store the summary for the final summary
             step_summaries.append(f"## Step {i}: {step}\n\n{summary}")
+
+            # Log total step metrics
+            step_time = time.time() - step_start_time
+            logger.info(f"Step {i} completed in {step_time:.2f}s total")
 
         except Exception as e:
             error_msg = f"Error processing step {i}: {str(e)}"
@@ -101,8 +135,8 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
 
             # Create error files
             error_content = f"# Error in Step {i}: {step}\n\n{str(e)}"
-            write_file(os.path.join(output_dir, f"{step_num}.md"), error_content)
-            write_file(os.path.join(memory_dir, f"{step_num}_summary.md"), "Error: " + str(e))
+            write_file(os.path.join(output_dir, f"step{i}.md"), error_content)
+            write_file(os.path.join(memory_dir, f"step{i}_summary.md"), "Error: " + str(e))
 
             # Add error to summaries
             step_summaries.append(f"## Step {i}: {step}\n\nError: {str(e)}")
@@ -110,8 +144,14 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
     # Final step: Generate the overall summary
     if step_summaries:
         logger.info("Generating final summary...")
+        final_summary_start_time = time.time()
         try:
-            run_final_summarizer_agent(step_summaries, output_dir)
+            final_summary_response = run_final_summarizer_agent(step_summaries, output_dir)
+            final_summary_time = time.time() - final_summary_start_time
+
+            # Log final summarizer metrics if available
+            logger.info(f"Final summarizer completed in {final_summary_time:.2f}s")
+
         except Exception as e:
             error_msg = f"Error generating final summary: {str(e)}"
             logger.error(f"{error_msg}")
@@ -121,4 +161,11 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
             error_content = f"# Error in Final Summary\n\n{str(e)}"
             write_file(os.path.join(output_dir, "summary_final.md"), error_content)
 
-    logger.info("Research completed!")
+    # Calculate and log total research metrics
+    total_research_time = time.time() - research_start_time
+    logger.info(f"Research completed in {total_research_time:.2f}s total!")
+    logger.info(f"Total steps processed: {len(steps)}")
+
+    # If we had token/cost tracking, we would log it here
+    # logger.info(f"Total tokens used: {total_tokens}")
+    # logger.info(f"Total estimated cost: ${total_cost:.4f}")

@@ -27,7 +27,7 @@ class SourceAgent(Agent):
         Returns:
             Agent: The configured source agent
         """
-        
+
         description = """
             The Source Agent is a specialized web search assistant designed to find relevant information 
             for research questions. It operates efficiently to gather diverse and reliable sources from 
@@ -45,7 +45,7 @@ class SourceAgent(Agent):
 
         expected_output = """
             Your output should be a well-formatted Markdown document containing:
-            
+
             - A list of relevant sources with clear headings
             - Brief snippets or summaries of the key information from each source
             - The complete URL for each source
@@ -87,10 +87,26 @@ def run_source_agent(step, step_number, memory_dir):
 
         # Formulate a search query from the step
         from gizmo.utils.file_utils import formulate_search_query
+        from gizmo.utils.error_utils import logger
         query = formulate_search_query(step)
 
         # Run the source agent
-        search_results = source.run(f"Research question: {query}").content
+        response = source.run(f"Research question: {query}")
+        search_results = response.content
+
+        # Log token usage and cost if available
+        try:
+            # Try to access metrics from the response
+            if hasattr(response, 'metrics'):
+                metrics = response.metrics
+                if hasattr(metrics, 'token_usage'):
+                    token_usage = metrics.token_usage
+                    logger.info(f"Source agent token usage for step {step_number}: {token_usage}")
+                if hasattr(metrics, 'cost'):
+                    cost = metrics.cost
+                    logger.info(f"Source agent estimated cost for step {step_number}: ${cost:.4f}")
+        except Exception as metrics_error:
+            logger.warning(f"Could not extract metrics from source agent response: {str(metrics_error)}")
 
         # Save the search results
         search_file = os.path.join(memory_dir, f"step{step_number}_search.md")

@@ -7,9 +7,11 @@ It allows the researcher agent to access previous research results and the plan.
 
 import os
 import re
+import time
 from typing import List, Dict, Optional
 
 from agno.tools.toolkit import Toolkit
+from gizmo.utils.error_utils import logger
 from gizmo.utils.file_utils import read_file
 
 
@@ -45,10 +47,17 @@ class ResearchContextToolkit(Toolkit):
         Returns:
             str: The research plan
         """
+        start_time = time.time()
+        logger.info(f"ResearchContextToolkit: Calling get_plan()")
+
         if not self.plan_path or not os.path.exists(self.plan_path):
+            logger.info(f"ResearchContextToolkit: No plan available")
             return "No plan available."
-        
-        return read_file(self.plan_path)
+
+        result = read_file(self.plan_path)
+        elapsed_time = time.time() - start_time
+        logger.info(f"ResearchContextToolkit: get_plan() completed in {elapsed_time:.2f}s")
+        return result
 
     def get_previous_step_result(self, step_number: int) -> str:
         """
@@ -60,14 +69,22 @@ class ResearchContextToolkit(Toolkit):
         Returns:
             str: The result of the step
         """
+        start_time = time.time()
+        logger.info(f"ResearchContextToolkit: Calling get_previous_step_result(step_number={step_number})")
+
         if step_number < 1:
+            logger.info(f"ResearchContextToolkit: Invalid step number: {step_number}")
             return "Invalid step number."
-        
+
         step_file = os.path.join(self.output_dir, f"step{step_number}.md")
         if not os.path.exists(step_file):
+            logger.info(f"ResearchContextToolkit: No result available for step {step_number}")
             return f"No result available for step {step_number}."
-        
-        return read_file(step_file)
+
+        result = read_file(step_file)
+        elapsed_time = time.time() - start_time
+        logger.info(f"ResearchContextToolkit: get_previous_step_result() completed in {elapsed_time:.2f}s")
+        return result
 
     def get_step_analysis(self, step_number: int) -> str:
         """
@@ -79,14 +96,22 @@ class ResearchContextToolkit(Toolkit):
         Returns:
             str: The analysis of the step
         """
+        start_time = time.time()
+        logger.info(f"ResearchContextToolkit: Calling get_step_analysis(step_number={step_number})")
+
         if step_number < 1:
+            logger.info(f"ResearchContextToolkit: Invalid step number: {step_number}")
             return "Invalid step number."
-        
+
         analysis_file = os.path.join(self.memory_dir, f"step{step_number}_analysis.md")
         if not os.path.exists(analysis_file):
+            logger.info(f"ResearchContextToolkit: No analysis available for step {step_number}")
             return f"No analysis available for step {step_number}."
-        
-        return read_file(analysis_file)
+
+        result = read_file(analysis_file)
+        elapsed_time = time.time() - start_time
+        logger.info(f"ResearchContextToolkit: get_step_analysis() completed in {elapsed_time:.2f}s")
+        return result
 
     def get_step_summary(self, step_number: int) -> str:
         """
@@ -98,14 +123,22 @@ class ResearchContextToolkit(Toolkit):
         Returns:
             str: The summary of the step
         """
+        start_time = time.time()
+        logger.info(f"ResearchContextToolkit: Calling get_step_summary(step_number={step_number})")
+
         if step_number < 1:
+            logger.info(f"ResearchContextToolkit: Invalid step number: {step_number}")
             return "Invalid step number."
-        
+
         summary_file = os.path.join(self.memory_dir, f"step{step_number}_summary.md")
         if not os.path.exists(summary_file):
+            logger.info(f"ResearchContextToolkit: No summary available for step {step_number}")
             return f"No summary available for step {step_number}."
-        
-        return read_file(summary_file)
+
+        result = read_file(summary_file)
+        elapsed_time = time.time() - start_time
+        logger.info(f"ResearchContextToolkit: get_step_summary() completed in {elapsed_time:.2f}s")
+        return result
 
     def find_relevant_steps(self, query: str, max_steps: int = 3) -> List[Dict[str, str]]:
         """
@@ -118,16 +151,19 @@ class ResearchContextToolkit(Toolkit):
         Returns:
             List[Dict[str, str]]: List of relevant steps with their content
         """
+        start_time = time.time()
+        logger.info(f"ResearchContextToolkit: Calling find_relevant_steps(query='{query}', max_steps={max_steps})")
+
         # Get all step files
         step_files = []
         for filename in os.listdir(self.output_dir):
             if re.match(r"step\d+\.md", filename):
                 step_number = int(re.search(r"step(\d+)\.md", filename).group(1))
                 step_files.append((step_number, os.path.join(self.output_dir, filename)))
-        
+
         # Sort by step number
         step_files.sort()
-        
+
         # Find relevant steps
         relevant_steps = []
         for step_number, file_path in step_files:
@@ -140,5 +176,7 @@ class ResearchContextToolkit(Toolkit):
                 })
                 if len(relevant_steps) >= max_steps:
                     break
-        
+
+        elapsed_time = time.time() - start_time
+        logger.info(f"ResearchContextToolkit: find_relevant_steps() found {len(relevant_steps)} relevant steps in {elapsed_time:.2f}s")
         return relevant_steps

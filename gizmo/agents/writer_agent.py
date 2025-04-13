@@ -18,17 +18,17 @@ class WriterAgent(Agent):
     def __init__(self):
         """
         Create and configure the Writer Agent.
-        
+
         Returns:
             Agent: The configured writer agent
         """
-        
+
         description = """
             The Writer Agent is a specialized editing assistant designed to refine and polish content.
             It improves the clarity, structure, and readability of technical content while preserving
             all factual information and maintaining the original meaning.
         """
-        
+
         instructions = """
             You are a technical writer. Your task is to refine and polish content.
             Rewrite and polish the given content into a clear, well-structured Markdown document.
@@ -38,10 +38,10 @@ class WriterAgent(Agent):
             Maintain all citations and references from the original text.
             Focus on clarity, coherence, and readability while preserving all information.
         """
-        
+
         expected_output = """
             Your output should be a polished Markdown document that:
-            
+
             - Has improved clarity, structure, and readability
             - Maintains all factual content from the original
             - Uses appropriate formatting (headings, bullet points, tables) to enhance readability
@@ -49,7 +49,7 @@ class WriterAgent(Agent):
             - Preserves all citations and references
             - Is free of grammatical errors and awkward phrasing
         """
-        
+
         super().__init__(
             name="Writer",
             role="Refiner",
@@ -81,9 +81,25 @@ def run_writer_agent(analysis, step_number, output_dir):
     try:
         # Create the writer agent
         writer = WriterAgent()
+        from gizmo.utils.error_utils import logger
 
         # Run the writer agent
-        polished_report = writer.run(analysis).content
+        response = writer.run(analysis)
+        polished_report = response.content
+
+        # Log token usage and cost if available
+        try:
+            # Try to access metrics from the response
+            if hasattr(response, 'metrics'):
+                metrics = response.metrics
+                if hasattr(metrics, 'token_usage'):
+                    token_usage = metrics.token_usage
+                    logger.info(f"Writer agent token usage for step {step_number}: {token_usage}")
+                if hasattr(metrics, 'cost'):
+                    cost = metrics.cost
+                    logger.info(f"Writer agent estimated cost for step {step_number}: ${cost:.4f}")
+        except Exception as metrics_error:
+            logger.warning(f"Could not extract metrics from writer agent response: {str(metrics_error)}")
 
         # Save the polished report
         report_file = os.path.join(output_dir, f"step{step_number}.md")

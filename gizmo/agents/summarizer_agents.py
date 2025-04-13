@@ -18,17 +18,17 @@ class StepSummarizerAgent(Agent):
     def __init__(self):
         """
         Create and configure the Step Summarizer Agent.
-        
+
         Returns:
             Agent: The configured step summarizer agent
         """
-        
+
         description = """
             The Step Summarizer Agent is a specialized assistant designed to create concise summaries 
             of research content. It extracts the most important information and presents it in a 
             clear, brief format that captures the essence of the original content.
         """
-        
+
         instructions = """
             You are a summarizer. Your task is to create concise summaries of research content.
             Summarize the following text in a few sentences, capturing the main point and any important findings.
@@ -36,17 +36,17 @@ class StepSummarizerAgent(Agent):
             Your summary should be no more than 3-5 sentences or a short paragraph.
             Ensure that the most important facts and findings are preserved in your summary.
         """
-        
+
         expected_output = """
             Your output should be a concise summary that:
-            
+
             - Captures the main point and key findings of the original content
             - Is no more than 3-5 sentences or a short paragraph
             - Preserves the most important facts and information
             - Is clear, focused, and easy to understand
             - Maintains the factual accuracy of the original content
         """
-        
+
         super().__init__(
             name="Step Summarizer",
             role="Summarizer",
@@ -63,17 +63,17 @@ class FinalSummarizerAgent(Agent):
     def __init__(self):
         """
         Create and configure the Final Summarizer Agent.
-        
+
         Returns:
             Agent: The configured final summarizer agent
         """
-        
+
         description = """
             The Final Summarizer Agent is a specialized synthesis assistant designed to create 
             comprehensive summaries of entire research projects. It integrates information from 
             multiple research steps to provide a cohesive overview of the findings and insights.
         """
-        
+
         instructions = """
             You are a research synthesizer. Your task is to create a comprehensive summary of an entire research project.
             Given the summaries of each step of the research, produce an overall summary of the findings.
@@ -83,10 +83,10 @@ class FinalSummarizerAgent(Agent):
             Keep it concise but comprehensive, focusing on the most significant insights and their implications.
             Your summary should provide a complete picture of what was learned through the research.
         """
-        
+
         expected_output = """
             Your output should be a well-structured research summary that:
-            
+
             - Addresses the original research question comprehensively
             - Highlights key insights from each part of the research
             - Has a clear introduction, key findings section, and conclusion
@@ -95,7 +95,7 @@ class FinalSummarizerAgent(Agent):
             - Focuses on significant insights and their implications
             - Provides a complete picture of what was learned
         """
-        
+
         super().__init__(
             name="Final Summarizer",
             role="Synthesizer",
@@ -127,9 +127,25 @@ def run_step_summarizer_agent(polished_report, step_number, memory_dir):
     try:
         # Create the step summarizer agent
         summarizer = StepSummarizerAgent()
+        from gizmo.utils.error_utils import logger
 
         # Run the step summarizer agent
-        summary = summarizer.run(polished_report).content
+        response = summarizer.run(polished_report)
+        summary = response.content
+
+        # Log token usage and cost if available
+        try:
+            # Try to access metrics from the response
+            if hasattr(response, 'metrics'):
+                metrics = response.metrics
+                if hasattr(metrics, 'token_usage'):
+                    token_usage = metrics.token_usage
+                    logger.info(f"Step summarizer agent token usage for step {step_number}: {token_usage}")
+                if hasattr(metrics, 'cost'):
+                    cost = metrics.cost
+                    logger.info(f"Step summarizer agent estimated cost for step {step_number}: ${cost:.4f}")
+        except Exception as metrics_error:
+            logger.warning(f"Could not extract metrics from step summarizer agent response: {str(metrics_error)}")
 
         # Save the summary
         summary_file = os.path.join(memory_dir, f"step{step_number}_summary.md")
@@ -161,12 +177,28 @@ def run_final_summarizer_agent(step_summaries, output_dir):
     try:
         # Create the final summarizer agent
         summarizer = FinalSummarizerAgent()
+        from gizmo.utils.error_utils import logger
 
         # Prepare the input for the final summarizer
         summarizer_input = "# Research Step Summaries\n\n" + "\n\n".join(step_summaries)
 
         # Run the final summarizer agent
-        final_summary = summarizer.run(summarizer_input).content
+        response = summarizer.run(summarizer_input)
+        final_summary = response.content
+
+        # Log token usage and cost if available
+        try:
+            # Try to access metrics from the response
+            if hasattr(response, 'metrics'):
+                metrics = response.metrics
+                if hasattr(metrics, 'token_usage'):
+                    token_usage = metrics.token_usage
+                    logger.info(f"Final summarizer agent token usage: {token_usage}")
+                if hasattr(metrics, 'cost'):
+                    cost = metrics.cost
+                    logger.info(f"Final summarizer agent estimated cost: ${cost:.4f}")
+        except Exception as metrics_error:
+            logger.warning(f"Could not extract metrics from final summarizer agent response: {str(metrics_error)}")
 
         # Save the final summary
         summary_file = os.path.join(output_dir, "summary_final.md")
