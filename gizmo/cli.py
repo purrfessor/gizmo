@@ -23,6 +23,7 @@ Note: For the plan command, either -i or -p must be provided.
 import argparse
 import os
 import sys
+import asyncio
 
 from gizmo.workflows.workflow import run_plan, run_research
 
@@ -152,7 +153,7 @@ def main():
                 os.makedirs(args.memory)
 
             print(f"Executing research based on plan '{args.plan}'...")
-            run_research(args.plan, args.output, args.memory, args.deep)
+            asyncio.run(run_research(args.plan, args.output, args.memory, args.deep))
             print(f"Research completed. Results saved to '{args.output}'")
 
     except Exception as e:

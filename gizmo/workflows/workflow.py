@@ -57,7 +57,7 @@ class GizmoWorkflow(ABC):
         pass
 
     @abstractmethod
-    def run_research(self, plan_path, output_dir, memory_dir=".memory", deep=False):
+    async def run_research(self, plan_path, output_dir, memory_dir=".memory", deep=False):
         """
         Execute a research workflow based on a plan.
 
@@ -102,7 +102,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
         # Generate the plan in markdown format
         return run_planning_agent(input_prompt, output_plan_path, is_file, size)
 
-    def run_research(self, plan_path, output_dir, memory_dir=".memory", deep=False):
+    async def run_research(self, plan_path, output_dir, memory_dir=".memory", deep=False):
         """
         Execute a research workflow based on a plan.
 
@@ -152,7 +152,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
                     # Use GPT Researcher for deep research
                     logger.info(f"Running GPT Researcher for deep research...")
                     deep_research_start_time = time.time()
-                    research_report = run_gpt_researcher_agent(topic, i, memory_dir, output_dir, plan, '\n\n'.join(step_summaries))
+                    research_report = await run_gpt_researcher_agent(topic, i, memory_dir, output_dir, plan, '\n\n'.join(step_summaries))
                     deep_research_time = time.time() - deep_research_start_time
 
                     # Log GPT Researcher metrics
@@ -296,7 +296,7 @@ def run_plan(input_prompt, output_plan_path, is_file=True, size=None):
     return basic_workflow.run_plan(input_prompt, output_plan_path, is_file, size)
 
 
-def run_research(plan_path, output_dir, memory_dir=".memory", deep=False):
+async def run_research(plan_path, output_dir, memory_dir=".memory", deep=False):
     """
     Execute a research workflow based on a plan.
 
@@ -312,4 +312,4 @@ def run_research(plan_path, output_dir, memory_dir=".memory", deep=False):
     Raises:
         Exception: If the research execution fails
     """
-    return basic_workflow.run_research(plan_path, output_dir, memory_dir, deep)
+    return await basic_workflow.run_research(plan_path, output_dir, memory_dir, deep)

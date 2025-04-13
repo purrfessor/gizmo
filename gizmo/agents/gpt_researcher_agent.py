@@ -22,7 +22,7 @@ class GPTResearcherError(Exception):
 
 
 @retry(max_attempts=2, delay=1.0)
-def run_gpt_researcher_agent(topic: str, step_number: int, memory_dir: str, output_dir: str, plan: str, previous_steps_summaries: str) -> str:
+async def run_gpt_researcher_agent(topic: str, step_number: int, memory_dir: str, output_dir: str, plan: str, previous_steps_summaries: str) -> str:
     """
     Run the GPT Researcher Agent for a step.
 
@@ -45,36 +45,37 @@ def run_gpt_researcher_agent(topic: str, step_number: int, memory_dir: str, outp
         <task>
             You are an AI deep research assistant. You are performing a step in a bigger research. You need to make a research on the given topic.
         </task>
-    
+
         <researchTopic>
             {topic}
         </researchTopic>
-        
+
         <currentStepNumber>
             {step_number}
         </currentStepNumber>
-        
+
         <researchPlan>
             {plan}
         </researchPlan>
-        
+
         <previousStepsSummaries>
             {previous_steps_summaries}
         </previousStepsSummaries>
     """
 
-    researcher = GPTResearcher(query = query, report_type="research_report") # "deep"
+    researcher = GPTResearcher(query=query, report_type="research_report")  # "deep"
 
-    research_result = researcher.conduct_research()
-    report = researcher.write_report()
+    # Conduct research asynchronously
+    research_result = await researcher.conduct_research()
 
+    # Generate report asynchronously
+    report = await researcher.write_report()
+
+    # Get additional information
     research_context = researcher.get_research_context()
     research_costs = researcher.get_costs()
     research_images = researcher.get_research_images()
     research_sources = researcher.get_research_sources()
 
-    return """
-        Yay!
-    """
-
-
+    # Return the actual report instead of placeholder
+    return report

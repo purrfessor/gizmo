@@ -8,7 +8,8 @@ import functools
 import logging
 import threading
 import time
-from typing import Callable, Any, Optional, Type, Union, Tuple
+import asyncio
+from typing import Callable, Any, Optional, Type, Union, Tuple, TypeVar, Awaitable
 
 # Configure logging
 logging.basicConfig(
@@ -76,6 +77,8 @@ base_logger = logging.getLogger('gizmo')
 logger = StepLoggerAdapter(base_logger)
 
 
+T = TypeVar('T')
+
 def retry(
     max_attempts: int = 3,
     delay: float = 1.0,
@@ -84,6 +87,7 @@ def retry(
 ) -> Callable:
     """
     Retry decorator for functions that might fail temporarily.
+    Works with both synchronous and asynchronous functions.
 
     Args:
         max_attempts (int): Maximum number of attempts
@@ -94,9 +98,9 @@ def retry(
     Returns:
         Callable: Decorated function
     """
-    def decorator(func):
+    def decorator(func: Callable[..., Union[T, Awaitable[T]]]) -> Callable[..., Union[T, Awaitable[T]]]:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def sync_wrapper(*args, **kwargs) -> T:
             current_delay = delay
             last_exception = None
 
@@ -121,7 +125,38 @@ def retry(
             # If we get here, all attempts failed
             raise last_exception
 
-        return wrapper
+        @functools.wraps(func)
+        async def async_wrapper(*args, **kwargs) -> T:
+            current_delay = delay
+            last_exception = None
+
+            for attempt in range(1, max_attempts + 1):
+                try:
+                    return await func(*args, **kwargs)
+                except exceptions as e:
+                    last_exception = e
+                    if attempt < max_attempts:
+                        logger.warning(
+                            f"Attempt {attempt}/{max_attempts} for {func.__name__} failed: {str(e)}. "
+                            f"Retrying in {current_delay:.2f} seconds..."
+                        )
+                        await asyncio.sleep(current_delay)
+                        current_delay *= backoff_factor
+                    else:
+                        logger.error(
+                            f"All {max_attempts} attempts for {func.__name__} failed. "
+                            f"Last error: {str(e)}"
+                        )
+
+            # If we get here, all attempts failed
+            raise last_exception
+
+        # Check if the function is a coroutine function
+        if asyncio.iscoroutinefunction(func):
+            return async_wrapper
+        else:
+            return sync_wrapper
+
     return decorator
 
 
