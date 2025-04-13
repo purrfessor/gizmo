@@ -187,7 +187,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
                     # Step 2: Researcher - Analyze the information
                     logger.info(f"Running researcher...")
                     researcher_start_time = time.time()
-                    researcher_response = run_researcher_agent(topic, search_results, i, memory_dir, output_dir, plan)
+                    researcher_response = run_researcher_agent(topic, search_results, i, memory_dir, output_dir, plan_path)
                     usage_accumulator.record(researcher_response)
                     researcher_time = time.time() - researcher_start_time
                     analysis = researcher_response.content
