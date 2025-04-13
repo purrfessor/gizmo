@@ -102,7 +102,7 @@ def run_researcher_agent(step, search_results, step_number, memory_dir, output_d
         plan_path (str, optional): Path to the plan file
 
     Returns:
-        str: The analysis
+        RunResponse: The analysis
 
     Raises:
         Exception: If the researcher agent fails after retries

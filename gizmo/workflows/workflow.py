@@ -161,7 +161,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
                 researcher_response = run_researcher_agent(topic, search_results, i, memory_dir, output_dir, plan_path)
                 usage_accumulator.record(researcher_response)
                 researcher_time = time.time() - researcher_start_time
-                analysis = researcher_response
+                analysis = researcher_response.content
 
                 # Log researcher agent metrics if available
                 logger.info(f"Researcher agent completed in {researcher_time:.2f}s")
