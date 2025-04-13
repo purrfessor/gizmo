@@ -121,26 +121,11 @@ def run_researcher_agent(step, search_results, step_number, memory_dir, output_d
 
         # Run the researcher agent
         response = researcher.run(researcher_input)
-        analysis = response.content
-
-        # Log token usage and cost if available
-        try:
-            # Try to access metrics from the response
-            if hasattr(response, 'metrics'):
-                metrics = response.metrics
-                if hasattr(metrics, 'token_usage'):
-                    token_usage = metrics.token_usage
-                    logger.info(f"Researcher agent token usage for step {step_number}: {token_usage}")
-                if hasattr(metrics, 'cost'):
-                    cost = metrics.cost
-                    logger.info(f"Researcher agent estimated cost for step {step_number}: ${cost:.4f}")
-        except Exception as metrics_error:
-            logger.warning(f"Could not extract metrics from researcher agent response: {str(metrics_error)}")
 
         # Save the analysis
         analysis_file = os.path.join(memory_dir, f"step{step_number}_analysis.md")
-        write_file(analysis_file, analysis)
+        write_file(analysis_file, response.content)
 
-        return analysis
+        return response
     except Exception as e:
         return handle_agent_error("Researcher", step_number, e, search_results)

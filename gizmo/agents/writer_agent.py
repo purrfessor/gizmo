@@ -85,27 +85,12 @@ def run_writer_agent(analysis, step_number, output_dir):
 
         # Run the writer agent
         response = writer.run(analysis)
-        polished_report = response.content
-
-        # Log token usage and cost if available
-        try:
-            # Try to access metrics from the response
-            if hasattr(response, 'metrics'):
-                metrics = response.metrics
-                if hasattr(metrics, 'token_usage'):
-                    token_usage = metrics.token_usage
-                    logger.info(f"Writer agent token usage for step {step_number}: {token_usage}")
-                if hasattr(metrics, 'cost'):
-                    cost = metrics.cost
-                    logger.info(f"Writer agent estimated cost for step {step_number}: ${cost:.4f}")
-        except Exception as metrics_error:
-            logger.warning(f"Could not extract metrics from writer agent response: {str(metrics_error)}")
 
         # Save the polished report
         report_file = os.path.join(output_dir, f"step{step_number}.md")
-        write_file(report_file, polished_report)
+        write_file(report_file, response.content)
 
-        return polished_report
+        return response
     except Exception as e:
         fallback = analysis  # Use the researcher's analysis as fallback
         write_file(os.path.join(output_dir, f"step{step_number}.md"), fallback)

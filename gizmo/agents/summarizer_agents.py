@@ -131,27 +131,12 @@ def run_step_summarizer_agent(polished_report, step_number, memory_dir):
 
         # Run the step summarizer agent
         response = summarizer.run(polished_report)
-        summary = response.content
-
-        # Log token usage and cost if available
-        try:
-            # Try to access metrics from the response
-            if hasattr(response, 'metrics'):
-                metrics = response.metrics
-                if hasattr(metrics, 'token_usage'):
-                    token_usage = metrics.token_usage
-                    logger.info(f"Step summarizer agent token usage for step {step_number}: {token_usage}")
-                if hasattr(metrics, 'cost'):
-                    cost = metrics.cost
-                    logger.info(f"Step summarizer agent estimated cost for step {step_number}: ${cost:.4f}")
-        except Exception as metrics_error:
-            logger.warning(f"Could not extract metrics from step summarizer agent response: {str(metrics_error)}")
 
         # Save the summary
         summary_file = os.path.join(memory_dir, f"step{step_number}_summary.md")
-        write_file(summary_file, summary)
+        write_file(summary_file, response.content)
 
-        return summary
+        return response
     except Exception as e:
         # Generate a simple summary as fallback
         fallback = f"This step covered: {polished_report[:100]}..."
@@ -184,27 +169,12 @@ def run_final_summarizer_agent(step_summaries, output_dir):
 
         # Run the final summarizer agent
         response = summarizer.run(summarizer_input)
-        final_summary = response.content
-
-        # Log token usage and cost if available
-        try:
-            # Try to access metrics from the response
-            if hasattr(response, 'metrics'):
-                metrics = response.metrics
-                if hasattr(metrics, 'token_usage'):
-                    token_usage = metrics.token_usage
-                    logger.info(f"Final summarizer agent token usage: {token_usage}")
-                if hasattr(metrics, 'cost'):
-                    cost = metrics.cost
-                    logger.info(f"Final summarizer agent estimated cost: ${cost:.4f}")
-        except Exception as metrics_error:
-            logger.warning(f"Could not extract metrics from final summarizer agent response: {str(metrics_error)}")
 
         # Save the final summary
         summary_file = os.path.join(output_dir, "summary_final.md")
-        write_file(summary_file, final_summary)
+        write_file(summary_file, response.content)
 
-        return final_summary
+        return response
     except Exception as e:
         # Generate a simple summary as fallback
         fallback = "# Research Summary\n\n" + "\n\n".join(step_summaries)

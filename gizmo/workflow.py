@@ -22,6 +22,7 @@ from gizmo.agents.summarizer_agents import run_step_summarizer_agent, run_final_
 from gizmo.agents.writer_agent import run_writer_agent
 from gizmo.utils.error_utils import retry, log_error, logger, set_step_context, clear_step_context
 from gizmo.utils.file_utils import write_file, ensure_dir, parse_plan_file
+from gizmo.utils.metrics_utils import UsageAccumulator
 
 
 @retry(max_attempts=3, delay=2.0)
@@ -59,8 +60,9 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
     """
     # Start timing the entire research process
     research_start_time = time.time()
-    total_tokens = 0
-    total_cost = 0.0
+
+    # Create a usage accumulator to track metrics across all agent runs
+    usage_accumulator = UsageAccumulator()
 
     # Ensure directories exist
     ensure_dir(memory_dir)
@@ -87,6 +89,7 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
             logger.info(f"Running source agent...")
             source_start_time = time.time()
             source_response = run_source_agent(step, i, memory_dir)
+            usage_accumulator.record(source_response)
             source_time = time.time() - source_start_time
             search_results = source_response
 
@@ -97,6 +100,7 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
             logger.info(f"Running researcher...")
             researcher_start_time = time.time()
             researcher_response = run_researcher_agent(step, search_results, i, memory_dir, output_dir, plan_path)
+            usage_accumulator.record(researcher_response)
             researcher_time = time.time() - researcher_start_time
             analysis = researcher_response
 
@@ -107,6 +111,7 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
             logger.info(f"Running writer...")
             writer_start_time = time.time()
             writer_response = run_writer_agent(analysis, i, output_dir)
+            usage_accumulator.record(writer_response)
             writer_time = time.time() - writer_start_time
             polished_report = writer_response
 
@@ -117,6 +122,7 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
             logger.info(f"Running step summarizer...")
             summarizer_start_time = time.time()
             summarizer_response = run_step_summarizer_agent(polished_report, i, memory_dir)
+            usage_accumulator.record(summarizer_response)
             summarizer_time = time.time() - summarizer_start_time
             summary = summarizer_response
 
@@ -172,6 +178,7 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
     logger.info(f"Research completed in {total_research_time:.2f}s total!")
     logger.info(f"Total steps processed: {len(steps)}")
 
-    # If we had token/cost tracking, we would log it here
-    # logger.info(f"Total tokens used: {total_tokens}")
-    # logger.info(f"Total estimated cost: ${total_cost:.4f}")
+    # Log accumulated metrics
+    metrics = usage_accumulator.get_metrics()
+    logger.info(f"Total tokens used: {metrics['total_tokens']}")
+    logger.info(f"Total model time: {metrics['model_time']:.4f}s")

@@ -92,26 +92,11 @@ def run_source_agent(step, step_number, memory_dir):
 
         # Run the source agent
         response = source.run(f"Research question: {query}")
-        search_results = response.content
-
-        # Log token usage and cost if available
-        try:
-            # Try to access metrics from the response
-            if hasattr(response, 'metrics'):
-                metrics = response.metrics
-                if hasattr(metrics, 'token_usage'):
-                    token_usage = metrics.token_usage
-                    logger.info(f"Source agent token usage for step {step_number}: {token_usage}")
-                if hasattr(metrics, 'cost'):
-                    cost = metrics.cost
-                    logger.info(f"Source agent estimated cost for step {step_number}: ${cost:.4f}")
-        except Exception as metrics_error:
-            logger.warning(f"Could not extract metrics from source agent response: {str(metrics_error)}")
 
         # Save the search results
         search_file = os.path.join(memory_dir, f"step{step_number}_search.md")
-        write_file(search_file, search_results)
+        write_file(search_file, response.content)
 
-        return search_results
+        return response
     except Exception as e:
         return handle_agent_error("Source", step_number, e)
