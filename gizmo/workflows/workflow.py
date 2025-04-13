@@ -23,8 +23,9 @@ from gizmo.agents.researcher_agent import run_researcher_agent
 from gizmo.agents.source_agent import run_source_agent
 from gizmo.agents.summarizer_agents import run_step_summarizer_agent, run_final_summarizer_agent
 from gizmo.agents.writer_agent import run_writer_agent
+from gizmo.agents.gpt_researcher_agent import run_gpt_researcher_agent
 from gizmo.utils.error_utils import retry, log_error, logger, set_step_context, clear_step_context
-from gizmo.utils.file_utils import write_file, ensure_dir, parse_plan_file
+from gizmo.utils.file_utils import write_file, ensure_dir, parse_plan_file, read_file
 from gizmo.utils.metrics_utils import UsageAccumulator
 
 
@@ -56,7 +57,7 @@ class GizmoWorkflow(ABC):
         pass
 
     @abstractmethod
-    def run_research(self, plan_path, output_dir, memory_dir=".memory"):
+    def run_research(self, plan_path, output_dir, memory_dir=".memory", deep=False):
         """
         Execute a research workflow based on a plan.
 
@@ -64,6 +65,7 @@ class GizmoWorkflow(ABC):
             plan_path (str): Path to the plan file
             output_dir (str): Directory to save the output files
             memory_dir (str): Directory to save intermediate files
+            deep (bool): Whether to use GPT Researcher for deep research
 
         Raises:
             Exception: If the research execution fails
@@ -100,7 +102,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
         # Generate the plan in markdown format
         return run_planning_agent(input_prompt, output_plan_path, is_file, size)
 
-    def run_research(self, plan_path, output_dir, memory_dir=".memory"):
+    def run_research(self, plan_path, output_dir, memory_dir=".memory", deep=False):
         """
         Execute a research workflow based on a plan.
 
@@ -108,6 +110,7 @@ class BasicGizmoWorkflow(GizmoWorkflow):
             plan_path (str): Path to the plan file
             output_dir (str): Directory to save the output files
             memory_dir (str): Directory to save intermediate files
+            deep (bool): Whether to use GPT Researcher for deep research
 
         Raises:
             Exception: If the research execution fails
@@ -124,9 +127,10 @@ class BasicGizmoWorkflow(GizmoWorkflow):
 
         # Parse the plan file to get the list of steps
         logger.info("Reading research plan...")
-        plan_response = run_plan_parser_agent(plan_path)
-        usage_accumulator.record(plan_response)
-        steps = plan_response.content.steps
+        plan = read_file(plan_path)
+        parsed_plan = run_plan_parser_agent(plan)
+        usage_accumulator.record(parsed_plan)
+        steps = parsed_plan.content.steps
 
         logger.info(f"Parsed {len(steps)} research steps from plan")
 
@@ -144,52 +148,77 @@ class BasicGizmoWorkflow(GizmoWorkflow):
             step_start_time = time.time()
 
             try:
-                # Step 1: Source - Search the web for information
-                logger.info(f"Running source agent...")
-                source_start_time = time.time()
-                source_response = run_source_agent(topic, i, memory_dir)
-                usage_accumulator.record(source_response)
-                source_time = time.time() - source_start_time
-                search_results = source_response
+                if deep:
+                    # Use GPT Researcher for deep research
+                    logger.info(f"Running GPT Researcher for deep research...")
+                    deep_research_start_time = time.time()
+                    research_report = run_gpt_researcher_agent(topic, i, memory_dir, output_dir, plan, '\n\n'.join(step_summaries))
+                    deep_research_time = time.time() - deep_research_start_time
 
-                # Log source agent metrics if available
-                logger.info(f"Source agent completed in {source_time:.2f}s")
+                    # Log GPT Researcher metrics
+                    logger.info(f"GPT Researcher completed in {deep_research_time:.2f}s")
 
-                # Step 2: Researcher - Analyze the information
-                logger.info(f"Running researcher...")
-                researcher_start_time = time.time()
-                researcher_response = run_researcher_agent(topic, search_results, i, memory_dir, output_dir, plan_path)
-                usage_accumulator.record(researcher_response)
-                researcher_time = time.time() - researcher_start_time
-                analysis = researcher_response.content
+                    # Step Summarizer - Summarize the step
+                    logger.info(f"Running step summarizer...")
+                    summarizer_start_time = time.time()
+                    summarizer_response = run_step_summarizer_agent(research_report, i, memory_dir)
+                    usage_accumulator.record(summarizer_response)
+                    summarizer_time = time.time() - summarizer_start_time
+                    summary = summarizer_response
 
-                # Log researcher agent metrics if available
-                logger.info(f"Researcher agent completed in {researcher_time:.2f}s")
+                    # Log summarizer agent metrics if available
+                    logger.info(f"Step summarizer agent completed in {summarizer_time:.2f}s")
 
-                # Step 3: Writer - Polish the analysis
-                logger.info(f"Running writer...")
-                writer_start_time = time.time()
-                writer_response = run_writer_agent(analysis, i, output_dir)
-                usage_accumulator.record(writer_response)
-                writer_time = time.time() - writer_start_time
-                polished_report = writer_response
+                    # Store the summary for the final summary
+                    step_summaries.append(f"## Step {i}: {step}\n\n{summary}")
+                else:
+                    # Use the standard multi-agent approach
+                    # Step 1: Source - Search the web for information
+                    logger.info(f"Running source agent...")
+                    source_start_time = time.time()
+                    source_response = run_source_agent(topic, i, memory_dir)
+                    usage_accumulator.record(source_response)
+                    source_time = time.time() - source_start_time
+                    search_results = source_response
 
-                # Log writer agent metrics if available
-                logger.info(f"Writer agent completed in {writer_time:.2f}s")
+                    # Log source agent metrics if available
+                    logger.info(f"Source agent completed in {source_time:.2f}s")
 
-                # Step 4: Step Summarizer - Summarize the step
-                logger.info(f"Running step summarizer...")
-                summarizer_start_time = time.time()
-                summarizer_response = run_step_summarizer_agent(polished_report, i, memory_dir)
-                usage_accumulator.record(summarizer_response)
-                summarizer_time = time.time() - summarizer_start_time
-                summary = summarizer_response
+                    # Step 2: Researcher - Analyze the information
+                    logger.info(f"Running researcher...")
+                    researcher_start_time = time.time()
+                    researcher_response = run_researcher_agent(topic, search_results, i, memory_dir, output_dir, plan)
+                    usage_accumulator.record(researcher_response)
+                    researcher_time = time.time() - researcher_start_time
+                    analysis = researcher_response.content
 
-                # Log summarizer agent metrics if available
-                logger.info(f"Step summarizer agent completed in {summarizer_time:.2f}s")
+                    # Log researcher agent metrics if available
+                    logger.info(f"Researcher agent completed in {researcher_time:.2f}s")
 
-                # Store the summary for the final summary
-                step_summaries.append(f"## Step {i}: {step}\n\n{summary}")
+                    # Step 3: Writer - Polish the analysis
+                    logger.info(f"Running writer...")
+                    writer_start_time = time.time()
+                    writer_response = run_writer_agent(analysis, i, output_dir)
+                    usage_accumulator.record(writer_response)
+                    writer_time = time.time() - writer_start_time
+                    polished_report = writer_response
+
+                    # Log writer agent metrics if available
+                    logger.info(f"Writer agent completed in {writer_time:.2f}s")
+
+                    # Step 4: Step Summarizer - Summarize the step
+                    logger.info(f"Running step summarizer...")
+                    summarizer_start_time = time.time()
+                    summarizer_response = run_step_summarizer_agent(polished_report, i, memory_dir)
+                    usage_accumulator.record(summarizer_response)
+                    summarizer_time = time.time() - summarizer_start_time
+                    summary = summarizer_response
+
+                    # Log summarizer agent metrics if available
+                    logger.info(f"Step summarizer agent completed in {summarizer_time:.2f}s")
+
+                    # Store the summary for the final summary
+                    step_summaries.append(f"## Step {i}: {step}\n\n{summary}")
 
                 # Log total step metrics
                 step_time = time.time() - step_start_time
@@ -267,7 +296,7 @@ def run_plan(input_prompt, output_plan_path, is_file=True, size=None):
     return basic_workflow.run_plan(input_prompt, output_plan_path, is_file, size)
 
 
-def run_research(plan_path, output_dir, memory_dir=".memory"):
+def run_research(plan_path, output_dir, memory_dir=".memory", deep=False):
     """
     Execute a research workflow based on a plan.
 
@@ -278,8 +307,9 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
         plan_path (str): Path to the plan file
         output_dir (str): Directory to save the output files
         memory_dir (str): Directory to save intermediate files
+        deep (bool): Whether to use GPT Researcher for deep research
 
     Raises:
         Exception: If the research execution fails
     """
-    return basic_workflow.run_research(plan_path, output_dir, memory_dir)
+    return basic_workflow.run_research(plan_path, output_dir, memory_dir, deep)

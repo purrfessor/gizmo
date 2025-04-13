@@ -15,7 +15,8 @@ setup(
         "openai>=1.0.0",
         "duckduckgo-search",
         "arxiv",
-        "pypdf"
+        "pypdf",
+        "gpt-researcher"
     ],
     entry_points={
         "console_scripts": [

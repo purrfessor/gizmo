@@ -43,7 +43,7 @@ class PlanParserAgent(Agent):
 
         1. Identify each research step from the input (they may be numbered, bulleted, or written as sentences).
         2. Normalize the format into a properly numbered Markdown list.
-        3. Keep the content of each step clear and concise, without changing its meaning.
+        3. Use the content of each step as is, don't modify it in any way.
         4. Ensure logical ordering and consistent tone across all steps.
         5. Do not return JSON or unstructured text—return only the formatted Markdown plan.
         """
@@ -69,12 +69,12 @@ class PlanParserAgent(Agent):
 
 
 @retry(max_attempts=2, delay=1.0)
-def run_plan_parser_agent(plan_path):
+def run_plan_parser_agent(plan):
     """
     Run the Plan Parser Agent to read the .md plan.
 
     Args:
-        plan_path (str): Path to the plan.md file
+        plan (str): Research plan
 
     Returns:
         Plan: The parsed plan
@@ -83,14 +83,11 @@ def run_plan_parser_agent(plan_path):
         Exception: If the plan parsing fails after retries
     """
     try:
-        # Read the plan file
-        plan_content = read_file(plan_path)
-
         # Create the plan parser agent
         parser_agent = PlanParserAgent()
 
         logger.info("Parsing research plan...")
         # Run the plan parser agent to get the structured output
-        return parser_agent.run(plan_content)
+        return parser_agent.run(plan)
     except Exception as e:
         return handle_agent_error("PlanParser", 0, e)
