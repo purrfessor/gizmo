@@ -4,11 +4,11 @@ Error utilities for Gizmo.
 This module provides utility functions for error handling and recovery strategies.
 """
 
-import time
-import logging
 import functools
+import logging
 import threading
-from typing import Callable, Any, Optional, Type, Union, List, Tuple
+import time
+from typing import Callable, Any, Optional, Type, Union, Tuple
 
 # Configure logging
 logging.basicConfig(

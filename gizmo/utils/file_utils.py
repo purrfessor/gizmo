@@ -4,10 +4,9 @@ File utilities for Gizmo.
 This module provides utility functions for file operations like reading and writing files.
 """
 
+import json
 import os
 import re
-import json
-from pathlib import Path
 
 
 def read_file(file_path):
@@ -86,8 +85,18 @@ def parse_plan_file(plan_path):
     Raises:
         ValueError: If the plan file doesn't contain a valid list of steps
     """
-    # First, check if there's a corresponding JSON file
-    json_path = plan_path.replace(".md", ".json")
+    # First, check if there's a corresponding JSON file with the new naming convention (with a '.' at the beginning)
+    dir_path, filename = os.path.split(plan_path)
+    if filename.endswith(".md"):
+        json_filename = "." + filename.replace(".md", ".json")
+    else:
+        json_filename = "." + filename + ".json"
+    json_path = os.path.join(dir_path, json_filename)
+
+    # If the new style JSON file doesn't exist, try the old naming convention
+    if not os.path.exists(json_path):
+        json_path = plan_path.replace(".md", ".json")
+
     if os.path.exists(json_path):
         try:
             # Try to parse the JSON file

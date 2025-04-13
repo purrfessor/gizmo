@@ -21,7 +21,6 @@ Note: For the plan command, either -i or -p must be provided.
 import argparse
 import os
 import sys
-from pathlib import Path
 
 from gizmo.workflow import run_plan, run_research
 

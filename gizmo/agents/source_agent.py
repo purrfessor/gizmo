@@ -6,13 +6,14 @@ of relevant, diverse, and reliable sources, each accompanied by summaries and li
 enrich the research process with high-quality external content.
 """
 
+import os
+
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from agno.tools.duckduckgo import DuckDuckGoTools
 
 from gizmo.utils.error_utils import retry, handle_agent_error
 from gizmo.utils.file_utils import write_file
-import os
 
 
 def _build_tools():

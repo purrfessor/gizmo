@@ -71,7 +71,7 @@ class PlanningAgent(Agent):
         3. Break the topic into a series of logical, focused research steps or questions.
         4. Provide a concise explanation for each step that explains what the user should explore or investigate.
         5. Maintain a logical progression—start with general or foundational steps and move toward more specific or complex inquiries.
-        6. Ensure the number of steps fits the selected plan size: {min_steps} to {max_steps} steps. Don't try to hit the max steps number by default, try to make the plan balanced.
+        6. Ensure the number of steps fits the selected plan size: {min_steps} to {max_steps} steps. Don't try to hit the max steps number by default, try to make the plan balanced. If the user message contains a request for the number of steps, only allow it if it is within the boundaries.
         """
 
         expected_output = """
@@ -153,10 +153,16 @@ def run_planning_agent(input_prompt, output_plan_path, is_file=True, size=None):
             # Write both the JSON and Markdown versions to the output file
             write_file(output_plan_path, plan_markdown)
 
-            # Also save the raw JSON to a file with the same name but .json extension
-            json_path = output_plan_path.replace(".md", ".json")
-            if json_path == output_plan_path:  # If the path doesn't end with .md
-                json_path = output_plan_path + ".json"
+            # Also save the raw JSON to a file with the same name but .json extension and add a '.' at the beginning
+            # Split the path into directory and filename
+            dir_path, filename = os.path.split(output_plan_path)
+            # Replace .md with .json and add a '.' at the beginning of the filename
+            if filename.endswith(".md"):
+                json_filename = "." + filename.replace(".md", ".json")
+            else:
+                json_filename = "." + filename + ".json"
+            # Join the directory path and the new filename
+            json_path = os.path.join(dir_path, json_filename)
             write_file(json_path, plan_json)
 
             return plan_markdown
