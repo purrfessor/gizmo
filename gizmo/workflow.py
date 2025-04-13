@@ -16,14 +16,14 @@ import os
 
 from gizmo.agents.crawler_agent import create_crawler_agent
 from gizmo.agents.planning_agent import create_planning_agent
-from gizmo.agents.researcher_agent import create_researcher_agent
+from gizmo.agents.researcher_agent import create_researcher_agent, run_researcher_agent
 from gizmo.agents.summarizer_agents import create_step_summarizer_agent, create_final_summarizer_agent
 from gizmo.agents.writer_agent import create_writer_agent
 from gizmo.utils.error_utils import retry, handle_agent_error, log_error
 from gizmo.utils.file_utils import read_file, write_file, ensure_dir, parse_plan_file, formulate_search_query
 
-
 import json
+
 
 @retry(max_attempts=3, delay=2.0)
 def run_plan(input_prompt, output_plan_path, is_file=True, step_number=None):
@@ -205,56 +205,6 @@ def run_crawler_agent(step, step_number, memory_dir):
         return search_results
     except Exception as e:
         return handle_agent_error("Crawler", step_number, e)
-
-
-@retry(max_attempts=2, delay=1.0)
-def run_researcher_agent(step, search_results, step_number, memory_dir, output_dir, plan_path=None):
-    """
-    Run the Researcher Agent for a step.
-
-    Args:
-        step (str): The step description
-        search_results (str): The search results from the crawler
-        step_number (int): The step number
-        memory_dir (str): Directory to save intermediate files
-        output_dir (str): Directory containing the output files
-        plan_path (str, optional): Path to the plan file
-
-    Returns:
-        str: The analysis
-
-    Raises:
-        Exception: If the researcher agent fails after retries
-    """
-    try:
-        # Create the researcher agent with access to research toolkit
-        researcher = create_researcher_agent(output_dir, memory_dir, plan_path)
-
-        # Prepare the input for the researcher
-        researcher_input = (
-            f"# Research Question\n\n{step}\n\n"
-            f"# Reference Information\n\n{search_results}\n\n"
-        )
-
-        # Add information about previous steps
-        if step_number > 1:
-            researcher_input += (
-                f"# Previous Research Steps\n\n"
-                f"Previous research steps are available through the ResearchToolkit.\n"
-                f"Consider reviewing previous steps that may be relevant to your current task.\n"
-                f"You can use ResearchToolkit.get_previous_step_result(step_number) to access specific steps.\n\n"
-            )
-
-        # Run the researcher agent
-        analysis = researcher.run(researcher_input).content
-
-        # Save the analysis
-        analysis_file = os.path.join(memory_dir, f"step{step_number}_analysis.md")
-        write_file(analysis_file, analysis)
-
-        return analysis
-    except Exception as e:
-        return handle_agent_error("Researcher", step_number, e, search_results)
 
 
 @retry(max_attempts=2, delay=1.0)
