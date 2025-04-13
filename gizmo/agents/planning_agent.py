@@ -14,7 +14,7 @@ from agno.models.openai import OpenAIChat
 from agno.tools.duckduckgo import DuckDuckGoTools
 from pydantic import BaseModel, Field
 
-from gizmo.utils.error_utils import retry, handle_agent_error
+from gizmo.utils.error_utils import retry, handle_agent_error, logger
 from gizmo.utils.file_utils import read_file, write_file
 
 # Cap the step number at 30 regardless of input
@@ -122,7 +122,7 @@ def run_planning_agent(input_prompt, output_plan_path, is_file=True, step_number
         # Create the planning agent
         plan_agent = PlanningAgent(step_number)
 
-        print("Generating research plan...")
+        logger.info("Generating research plan...")
         # Run the planning agent to get the plan
         plan_result = plan_agent.run(user_prompt).content
 
@@ -157,7 +157,7 @@ def run_planning_agent(input_prompt, output_plan_path, is_file=True, step_number
             return plan_markdown
         except json.JSONDecodeError as e:
             # If JSON parsing fails, assume the output is already in Markdown format
-            print(f"Warning: Could not parse plan as JSON. Using raw output: {str(e)}")
+            logger.warning(f"Could not parse plan as JSON. Using raw output: {str(e)}")
             write_file(output_plan_path, plan_json)
             return plan_json
     except Exception as e:
