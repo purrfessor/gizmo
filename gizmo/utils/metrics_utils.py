@@ -4,7 +4,8 @@ Metrics utilities for Gizmo.
 This module provides utilities for tracking and accumulating usage metrics
 from agno RunResponse objects.
 """
-from typing import Dict, Any, Optional
+from typing import Dict, Any
+
 
 class UsageAccumulator:
     """

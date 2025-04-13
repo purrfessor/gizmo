@@ -17,26 +17,25 @@ from gizmo.utils.error_utils import retry, handle_agent_error
 from gizmo.utils.file_utils import read_file, write_file
 
 
-def _build_tools(output_dir, memory_dir, plan_path):
+def _build_tools(output_dir, memory_dir):
     tools = [DuckDuckGoTools(), ArxivTools()]
 
     # Add research toolkit if directories are provided
     if output_dir and memory_dir:
-        research_toolkit = ResearchContextToolkit(output_dir, memory_dir, plan_path)
+        research_toolkit = ResearchContextToolkit(output_dir, memory_dir)
         tools.append(research_toolkit)
 
     return tools
 
 
 class ResearcherAgent(Agent):
-    def __init__(self, output_dir=None, memory_dir=None, plan_path=None):
+    def __init__(self, output_dir=None, memory_dir=None):
         """
             Create and configure the Researcher Agent.
 
             Args:
                 output_dir (str, optional): Directory containing the output files
                 memory_dir (str, optional): Directory containing the memory files
-                plan_path (str, optional): Path to the plan file
 
             Returns:
                 Agent: The configured researcher agent
@@ -81,7 +80,7 @@ class ResearcherAgent(Agent):
             name="Researcher",
             role="Analyst",
             model=OpenAIChat(id="gpt-4o"),  # we need an advanced reasoning model for this task
-            tools=_build_tools(output_dir, memory_dir, plan_path),
+            tools=_build_tools(output_dir, memory_dir),
             description=description,
             instructions=instructions,
             expected_output=expected_output,
@@ -89,7 +88,7 @@ class ResearcherAgent(Agent):
         )
 
 @retry(max_attempts=2, delay=1.0)
-def run_researcher_agent(step, search_results, step_number, memory_dir, output_dir, plan_path=None):
+def run_researcher_agent(step, search_results, step_number, memory_dir, output_dir, plan_path):
     """
     Run the Researcher Agent for a step.
 
@@ -99,10 +98,10 @@ def run_researcher_agent(step, search_results, step_number, memory_dir, output_d
         step_number (int): The step number
         memory_dir (str): Directory to save intermediate files
         output_dir (str): Directory containing the output files
-        plan_path (str, optional): Path to the plan file
+        plan_path (str): Path to the plan
 
     Returns:
-        str: The analysis
+        RunResponse: The analysis
 
     Raises:
         Exception: If the researcher agent fails after retries

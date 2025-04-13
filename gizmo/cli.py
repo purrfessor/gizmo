@@ -8,7 +8,7 @@ This module provides the command-line interface for Gizmo, allowing users to:
 
 Usage:
     gizmo plan [-i <input_file> | -p <prompt>] [-s <size>] [-o <output_path>]
-    gizmo research [-p <plan_file>] [-o <output_dir>]
+    gizmo research [-p <plan_file>] [-o <output_dir>] [--deep]
 
 Note: For the plan command, either -i or -p must be provided.
       The -s option allows specifying the size of the research plan: small (1-10 steps), 
@@ -16,14 +16,16 @@ Note: For the plan command, either -i or -p must be provided.
       For the -o option, if the path ends with '.md', it writes directly to that file.
       Otherwise, it creates a directory and writes to 'plan.md' inside it.
       For the research command, if -p is not provided, it looks for the plan in './output/plan.md' by default.
+      The --deep flag enables deep research using GPT Researcher, which produces more comprehensive
+      research for each step instead of using the standard multi-agent approach.
 """
 
 import argparse
 import os
 import sys
-from pathlib import Path
+import asyncio
 
-from gizmo.workflow import run_plan, run_research
+from gizmo.workflows.workflow import run_plan, run_research
 
 
 def setup_parser():
@@ -61,7 +63,7 @@ def setup_parser():
         "research", help="Execute a research workflow based on a plan"
     )
     research_parser.add_argument(
-        "-p", "--plan", default="./output/.plan.json", help="Input file containing the research plan (default: ./output/plan.md)"
+        "-p", "--plan", default="./output/plan.md", help="Input file containing the research plan (default: ./output/plan.md)"
     )
     research_parser.add_argument(
         "-o", "--output", default="output", help="Output directory for research results (default: output)"
@@ -71,6 +73,9 @@ def setup_parser():
     )
     research_parser.add_argument(
         "-k", "--api-key", help="OpenAI API key (overrides OPENAI_API_KEY environment variable)"
+    )
+    research_parser.add_argument(
+        "--deep", action="store_true", help="Use GPT Researcher for deep research"
     )
 
     return parser
@@ -148,7 +153,7 @@ def main():
                 os.makedirs(args.memory)
 
             print(f"Executing research based on plan '{args.plan}'...")
-            run_research(args.plan, args.output, args.memory)
+            asyncio.run(run_research(args.plan, args.output, args.memory, args.deep))
             print(f"Research completed. Results saved to '{args.output}'")
 
     except Exception as e:
