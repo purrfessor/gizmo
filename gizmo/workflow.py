@@ -12,17 +12,16 @@ The workflow includes:
    b. Find relevant information from previous steps
 """
 
+import json
 import os
 
+from gizmo.agents.researcher_agent import run_researcher_agent
 from gizmo.agents.crawler_agent import create_crawler_agent
 from gizmo.agents.planning_agent import create_planning_agent
-from gizmo.agents.researcher_agent import create_researcher_agent, run_researcher_agent
 from gizmo.agents.summarizer_agents import create_step_summarizer_agent, create_final_summarizer_agent
 from gizmo.agents.writer_agent import create_writer_agent
 from gizmo.utils.error_utils import retry, handle_agent_error, log_error
 from gizmo.utils.file_utils import read_file, write_file, ensure_dir, parse_plan_file, formulate_search_query
-
-import json
 
 
 @retry(max_attempts=3, delay=2.0)

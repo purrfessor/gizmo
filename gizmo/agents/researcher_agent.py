@@ -12,8 +12,8 @@ from agno.models.openai import OpenAIChat
 from agno.tools.duckduckgo import DuckDuckGoTools
 
 from gizmo.utils.research_toolkit import ResearchToolkit
-from utils.error_utils import retry, handle_agent_error
-from utils.file_utils import read_file, write_file
+from gizmo.utils.error_utils import retry, handle_agent_error
+from gizmo.utils.file_utils import read_file, write_file
 
 
 def _build_tools(output_dir, memory_dir, plan_path):
