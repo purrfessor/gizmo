@@ -4,6 +4,12 @@ Workflow orchestration for Gizmo.
 This module implements the core workflow for Gizmo, including:
 1. Planning phase - Generate a research plan from a prompt
 2. Research phase - Execute a multi-agent research workflow based on a plan
+
+The workflow includes:
+1. Direct inclusion of the research plan in the researcher agent's instructions
+2. A research toolkit that allows the researcher agent to:
+   a. Read results from previous research steps
+   b. Find relevant information from previous steps
 """
 
 import os
@@ -113,7 +119,7 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
 
     # Process each step in the plan
     for i, step in enumerate(steps, start=1):
-        step_num = f"step{i}"
+        step_num = f"step #{i}"
         print(f"\nProcessing {step_num}: {step}")
 
         try:
@@ -123,7 +129,7 @@ def run_research(plan_path, output_dir, memory_dir=".memory"):
 
             # Step 2: Researcher - Analyze the information
             print(f"  Running researcher for {step_num}...")
-            analysis = run_researcher_agent(step, search_results, i, memory_dir)
+            analysis = run_researcher_agent(step, search_results, i, memory_dir, output_dir, plan_path)
 
             # Step 3: Writer - Polish the analysis
             print(f"  Running writer for {step_num}...")
@@ -202,7 +208,7 @@ def run_crawler_agent(step, step_number, memory_dir):
 
 
 @retry(max_attempts=2, delay=1.0)
-def run_researcher_agent(step, search_results, step_number, memory_dir):
+def run_researcher_agent(step, search_results, step_number, memory_dir, output_dir, plan_path=None):
     """
     Run the Researcher Agent for a step.
 
@@ -211,6 +217,8 @@ def run_researcher_agent(step, search_results, step_number, memory_dir):
         search_results (str): The search results from the crawler
         step_number (int): The step number
         memory_dir (str): Directory to save intermediate files
+        output_dir (str): Directory containing the output files
+        plan_path (str, optional): Path to the plan file
 
     Returns:
         str: The analysis
@@ -219,14 +227,23 @@ def run_researcher_agent(step, search_results, step_number, memory_dir):
         Exception: If the researcher agent fails after retries
     """
     try:
-        # Create the researcher agent
-        researcher = create_researcher_agent()
+        # Create the researcher agent with access to research toolkit
+        researcher = create_researcher_agent(output_dir, memory_dir, plan_path)
 
         # Prepare the input for the researcher
         researcher_input = (
             f"# Research Question\n\n{step}\n\n"
-            f"# Reference Information\n\n{search_results}"
+            f"# Reference Information\n\n{search_results}\n\n"
         )
+
+        # Add information about previous steps
+        if step_number > 1:
+            researcher_input += (
+                f"# Previous Research Steps\n\n"
+                f"Previous research steps are available through the ResearchToolkit.\n"
+                f"Consider reviewing previous steps that may be relevant to your current task.\n"
+                f"You can use ResearchToolkit.get_previous_step_result(step_number) to access specific steps.\n\n"
+            )
 
         # Run the researcher agent
         analysis = researcher.run(researcher_input).content
