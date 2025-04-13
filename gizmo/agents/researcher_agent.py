@@ -9,6 +9,7 @@ import os
 
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
+from agno.tools.arxiv import ArxivTools
 from agno.tools.duckduckgo import DuckDuckGoTools
 
 from gizmo.tools.research_toolkit import ResearchContextToolkit
@@ -17,7 +18,7 @@ from gizmo.utils.file_utils import read_file, write_file
 
 
 def _build_tools(output_dir, memory_dir, plan_path):
-    tools = [DuckDuckGoTools()]
+    tools = [DuckDuckGoTools(), ArxivTools()]
 
     # Add research toolkit if directories are provided
     if output_dir and memory_dir:
@@ -53,13 +54,14 @@ class ResearcherAgent(Agent):
 
                 1. Understand the user's question or topic. Clarify ambiguities before proceeding.
                 2. Search for relevant information using the DuckDuckGo search tool if the links provided in the initial prompt are not enough.
-                3. Review provided research plan and incorporate it into your strategy.
-                4. If you find any related topics in the research plan, use the ResearchToolkit to access previously stored results or ongoing project data.
-                5. Collect and evaluate all information critically, checking sources and consistency.
-                6. Structure your findings logically, using clear headings and bullet points where needed.
-                7. Provide factual, unbiased, and in-depth explanations.
-                8. Cite your sources or indicate where data originated, especially if it's retrieved through a tool.
-                9. Ensure your response addresses all key aspects of the query and provides actionable insight.
+                3. Read articles on Arxiv if the data found already is not enough and you need scientific knowledge.
+                4. Review provided research plan and incorporate it into your strategy.
+                5. If you find any related topics in the research plan, use the ResearchToolkit to access previously stored results or ongoing project data.
+                6. Collect and evaluate all information critically, checking sources and consistency.
+                7. Structure your findings logically, using clear headings and bullet points where needed.
+                8. Provide factual, unbiased, and in-depth explanations.
+                9. Cite your sources or indicate where data originated, especially if it's retrieved through a tool.
+                10. Ensure your response addresses all key aspects of the query and provides actionable insight.
         """
 
         expected_output = """

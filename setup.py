@@ -13,7 +13,9 @@ setup(
     install_requires=[
         "agno==1.2.6",
         "openai>=1.0.0",
-        "duckduckgo-search"
+        "duckduckgo-search",
+        "arxiv",
+        "pypdf"
     ],
     entry_points={
         "console_scripts": [
