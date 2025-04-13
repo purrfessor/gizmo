@@ -21,9 +21,9 @@ Note: For the plan command, either -i or -p must be provided.
 """
 
 import argparse
+import asyncio
 import os
 import sys
-import asyncio
 
 from gizmo.workflows.workflow import run_plan, run_research
 

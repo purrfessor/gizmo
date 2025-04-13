@@ -5,8 +5,6 @@ This agent analyzes a research prompt and produces a detailed plan with step-by-
 that guide the research process. It ensures that the research covers the topic comprehensively, using
 web tools to inform the structure and content of the plan.
 """
-import os
-from typing import List
 
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat

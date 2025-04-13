@@ -3,18 +3,14 @@ Plan Parser Agent for Gizmo.
 
 This agent reads a plan.md file and produces a structured JSON output that can be used for iteration.
 """
-import json
-import os
-import re
-from pydoc import describe
-from typing import List, Dict
+from typing import List
 
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from pydantic import BaseModel, Field
 
 from gizmo.utils.error_utils import retry, handle_agent_error, logger
-from gizmo.utils.file_utils import read_file, write_file
+
 
 class Step(BaseModel):
     step: int = Field(..., description="The step number.")

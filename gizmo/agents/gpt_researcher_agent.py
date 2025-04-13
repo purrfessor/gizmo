@@ -5,15 +5,11 @@ This module defines the GPT Researcher Agent, which is responsible for using
 the gpt-researcher library to produce comprehensive research on a topic.
 """
 import os
-import subprocess
-import json
-import tempfile
-from typing import Dict, Any, Optional
 
 from gpt_researcher import GPTResearcher
 
-from gizmo.utils.error_utils import retry, handle_agent_error, logger
-from gizmo.utils.file_utils import read_file, write_file, ensure_dir
+from gizmo.utils.error_utils import retry, logger
+from gizmo.utils.file_utils import write_file
 
 
 class GPTResearcherError(Exception):
