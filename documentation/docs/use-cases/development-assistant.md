@@ -1,6 +1,6 @@
 # Using Gizmo as a Development Assistant
 
-Gizmo can significantly enhance your software development workflow by providing in-depth research and structured guidance for various development tasks. This guide explains how to leverage Gizmo alongside your AI-powered IDE to improve code quality and development efficiency.
+Gizmo can significantly enhance your software development workflow by providing in-depth research and structured guidance for various development tasks. This guide explains how to leverage Gizmo alongside your AI-powered IDE to streamline your development process and reduce routine work.
 
 ## Overview
 
@@ -12,136 +12,139 @@ As a development assistant, Gizmo helps you:
 - Create a transparent, step-by-step implementation plan
 - Improve the quality and maintainability of your code
 
-## Development Scenarios
-
-Gizmo is particularly valuable in the following development scenarios:
-
-### 1. Service MVP Development
-
-When creating a minimum viable product (MVP) for a new service, Gizmo can:
-
-- Research industry best practices for the specific type of service
-- Identify essential features and prioritize development efforts
-- Recommend appropriate technology stacks and architectural patterns
-- Provide implementation guidance for critical components
-- Help establish testing strategies and deployment workflows
-
-### 2. Code Refactoring
-
-For refactoring existing codebases, Gizmo can:
-
-- Analyze current architectural patterns and identify improvement opportunities
-- Research modern best practices for the specific technology stack
-- Recommend refactoring strategies and patterns
-- Break down the refactoring process into manageable steps
-- Provide guidance on testing and validating the refactored code
-
-### 3. Feature Development
-
-When adding new features to existing applications, Gizmo can:
-
-- Research similar feature implementations and best practices
-- Identify potential integration challenges and solutions
-- Recommend appropriate design patterns and approaches
-- Provide guidance on testing strategies for the new feature
-- Help ensure compatibility with the existing codebase
-
 ## Development Workflow
+
+The Gizmo development assistant workflow consists of five straightforward steps:
 
 ### 1. Formulate Your Development Question
 
-Start by defining a clear, specific question about your development task:
+Start by defining a clear, specific question about your development task. Your question should focus on what you're trying to accomplish.
 
-**Examples of good development questions:**
-- "What are the best practices for building a Python CLI tool that orchestrates LLM agents?"
-- "How should I refactor a monolithic Node.js application into microservices?"
-- "What's the most efficient way to implement real-time notifications in a React application?"
+**Example prompts for different scenarios:**
 
-### 2. Generate a Research Plan
+**For developing an MVP for a new service:**
+- "What's the best architecture for a scalable e-commerce microservice in Go?"
+- "How should I design a Python API service for processing and analyzing user-generated content?"
+- "What are the essential components for a real-time chat application using Node.js and WebSockets?"
 
-Use the `plan` command to create a structured research plan:
+**For developing a new feature in an existing service:**
+- "How can I implement a recommendation system in my existing e-commerce platform?"
+- "What's the best approach to add multi-factor authentication to my Java web application?"
+- "How should I implement a rate-limiting mechanism in my REST API service?"
+
+**For performing a refactoring on a service:**
+- "How can I refactor my monolithic PHP application into a microservices architecture?"
+- "What's the best way to migrate my application from REST to GraphQL?"
+- "How should I modernize my legacy jQuery codebase to use React and TypeScript?"
+
+### 2. Create/Open a Project in Your IDE
+
+Open your preferred IDE (VS Code, JetBrains IDEs, Cursor, etc.) and either:
+
+- Create a new project for your development task
+- Open an existing project that you want to enhance or refactor
+
+### 3. Create a Plan Using Gizmo CLI
+
+Use the `plan` command to create a structured development plan:
 
 ```bash
-gizmo plan -p "Your development question" -o dev_plan.md
+gizmo plan -p "Your development question" -o {project_dir}/todo/dev_plan.md
 ```
 
 For complex development tasks, consider using a larger plan size:
 
 ```bash
-gizmo plan -p "Your development question" -s medium -o dev_plan.md
+gizmo plan -p "Your development question" -s medium -o {project_dir}/todo/dev_plan.md
 ```
 
-### 3. Execute the Research
+This plan will break down your development task into logical, manageable steps.
 
-Run the research command to gather comprehensive information:
+### 4. Perform Research with Output into Your Repository
+
+Run the research command to gather comprehensive information about each step in your plan:
 
 ```bash
-gizmo research -p dev_plan.md -o dev_research
+gizmo research -p {project_dir}/todo/dev_plan.md -o {project_dir}/todo/dev_research
 ```
 
-### 4. Integrate with Your AI-Powered IDE
+Gizmo will:
+- Search for best practices, design patterns, and implementation approaches
+- Analyze and synthesize the information
+- Create detailed reports for each step in your development plan
+- Generate a comprehensive summary of all findings
 
-This is where Gizmo's value as a development assistant truly shines:
+All this information will be saved directly in your project repository, making it easily accessible.
 
-1. Open your AI-powered IDE (Cursor AI, JetBrains with Junie, VS Code with Copilot, etc.)
-2. Share the research results with your AI coding assistant
-3. Implement the solution step by step, referencing specific research steps
+### 5. Leverage Your AI Assistant in the IDE
+
+This is where the magic happens:
+
+1. In your IDE, use your AI coding assistant (GitHub Copilot, JetBrains AI Assistant, Cursor AI, etc.)
+2. Prompt the AI assistant to read and utilize the research documents
 
 For example, you might tell your AI assistant:
-```
-"I've researched how to build a Python CLI tool. Let's implement the command structure described in step1.md in a package called 'cli'."
-```
 
-Later, you can continue with:
 ```
-"Now, let's implement the error handling approach described in step4.md."
+"Please read the files in the dev_research directory and help me implement the collaborative filtering approach described in step2.md."
 ```
 
-## Benefits of This Approach
+Or:
 
-Using Gizmo alongside your AI-powered IDE offers several advantages:
+```
+"Based on the microservices architecture research in dev_research/step1.md, help me refactor this user authentication module into a separate microservice."
+```
 
-1. **Improved Code Quality**: The AI assistant has access to comprehensive research on best practices, resulting in higher-quality code
-2. **Structured Implementation**: Breaking down the development process into steps creates a more organized approach
-3. **Transparency**: You can track exactly which recommendations are being implemented at each stage
-4. **Contextual Awareness**: The AI assistant has full context of the research, enabling more coherent implementation
-5. **Learning Opportunity**: You gain insights into best practices while developing your solution
+Your AI assistant can now provide much more targeted, high-quality guidance based on the comprehensive research Gizmo has performed.
 
-## Example: Refactoring a Python CLI Application
+## Benefits for Developers
 
-Let's walk through a complete example of using Gizmo to assist with refactoring:
+This workflow addresses many common pain points in a developer's daily routine:
 
-1. **Create a research plan:**
+1. **Reduces Research Time**: No more jumping between Stack Overflow, documentation, and blog posts
+2. **Provides Structured Guidance**: Transforms vague requirements into clear, actionable steps
+3. **Enhances AI Coding Assistants**: Gives your AI assistant the context it needs to provide truly helpful code suggestions
+4. **Improves Code Quality**: Ensures implementations follow best practices and established patterns
+5. **Accelerates Onboarding**: Helps developers quickly understand new technologies or domains
+6. **Creates Documentation**: The research outputs serve as documentation for implementation decisions
+
+## Example: Developing a New Feature
+
+Let's walk through a complete example of using Gizmo to assist with adding a new feature:
+
+1. **Formulate your question:**
+   "How should I implement a user notification system with both in-app and email notifications in my React/Node.js application?"
+
+2. **Open your project in your IDE:**
+   Open your React/Node.js application in Cursor, WebStorm, or another IDE.
+
+3. **Create a research plan:**
    ```bash
-   gizmo plan -p "I'm working on a Python repository that implements a command-line interface (CLI) tool designed to orchestrate local agents that perform deep research tasks using various large language model (LLM) providers. I need to refactor it using best practices for Python CLI development and LLM agent orchestration architecture." -o refactoring_plan.md
+   gizmo plan -p "How should I implement a user notification system with both in-app and email notifications in an React/Node.js application?" -o {project_dir}/todo/notification_plan.md
+   ```
+   
+   If necessary, you can also ask your AI assistant in IDE to write some description of the project in an `.md` file so that gizmo can use that file as an input to have more context about your project. For example tell Cursor:
+     "Write a brief description of the service including the technology stack, main functionalities and architecture. Put it into a file `prompt.md`." Then add additional instruction into the `prompt.md` if needed, and call:
+
+   ```bash
+   gizmo plan -i {project_dir}/todo/prompt.md -o {project_dir}/todo/notification_plan.md
    ```
 
-2. **Execute the research:**
+4. **Execute the research:**
    ```bash
-   gizmo research -p refactoring_plan.md -o refactoring_research
+   gizmo research -p {project_dir}/todo/notification_plan.md -o {project_dir}/todo
    ```
 
-3. **Use the research with your AI coding assistant:**
-   - Share the research results with your AI assistant
-   - Implement the recommended project structure from step1.md
-   - Apply the CLI framework recommendations from step2.md
-   - Implement the error handling strategies from step4.md
-   - Continue through each step until the refactoring is complete
+5. **Use your AI assistant in the IDE:**
+   Prompt your AI assistant: "I need to implement a notification system in my app. Please read the research in the todo directory and help me implement the notification service backend described in step2.md."
 
 ## Tips for Effective Development with Gizmo
 
-- **Be specific about your development context**: Include information about your current tech stack, constraints, and goals
-- **Review all research steps before implementation**: Get a complete picture before starting to code
-- **Implement incrementally**: Follow the step-by-step approach for more manageable development
+- **Be specific about your tech stack**: Include information about frameworks, libraries, and versions you're using
+- **Specify constraints**: Mention any performance requirements, compatibility needs, or other limitations
+- **Start with architecture**: Implement high-level architectural recommendations before diving into specific components
+- **Commit research to version control**: The research documents are valuable references for future development
 - **Iterate as needed**: As you implement, you may discover new questions that require additional research
-
-## Example Prompts
-
-You can find example prompts for different development scenarios in the examples directory of the Gizmo repository:
-
-- Service MVP: `examples/simple/`
-- Refactoring: `examples/refactoring/`
-- Feature Development: `examples/readme/`
 
 ## Related Resources
 
