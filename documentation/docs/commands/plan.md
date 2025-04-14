@@ -1,4 +1,4 @@
-# `plan` Command
+# `plan`
 
 The `plan` command is the first step in the Gizmo research workflow. It analyzes your research question or topic and generates a structured research plan that breaks down the topic into manageable steps.
 
