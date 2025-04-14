@@ -16,7 +16,8 @@ setup(
         "duckduckgo-search",
         "arxiv",
         "pypdf",
-        "gpt-researcher"
+        "gpt-researcher",
+        "mkdocs-material"
     ],
     entry_points={
         "console_scripts": [

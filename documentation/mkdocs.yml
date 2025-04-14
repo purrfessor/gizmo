@@ -1,0 +1,88 @@
+site_name: Gizmo Documentation
+site_description: Documentation for Gizmo, an AI-powered command-line research assistant
+site_author: purrfessor
+site_url: https://github.com/purrfessor/gizmo
+
+# Repository
+repo_name: purrfessor/gizmo
+repo_url: https://github.com/purrfessor/gizmo
+edit_uri: edit/main/documentation/docs/
+
+# Configuration
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - navigation.indexes
+    - search.highlight
+    - search.share
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+# Plugins
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+# Navigation
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Commands:
+    - Overview: commands/index.md
+    - Plan Command: commands/plan.md
+    - Research Command: commands/research.md
+  - Use Cases:
+    - Overview: use-cases/index.md
+    - Research Assistant: use-cases/research-assistant.md
+    - Development Assistant: use-cases/development-assistant.md
+  - Observability: observability.md
+
+# Extra
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/purrfessor/gizmo
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY
