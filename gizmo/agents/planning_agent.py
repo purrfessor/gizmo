@@ -67,7 +67,7 @@ class PlanningAgent(Agent):
         Your output should be a structured research plan consisting of:
 
         - A numbered list of research steps (between the defined minimum and maximum steps)
-        - Each step containing a short, descriptive topic or research question
+        - Each step containing a short, descriptive topic or research question. Try to describe the step in a single sentence, if possible. Don't go over 3 sentences.
         - A progression that helps build an understanding of the subject
         - Steps that collectively ensure the topic is explored thoroughly
         - Clear, informative formatting in Markdown

@@ -14,6 +14,8 @@ setup(
         "agno==1.2.6",
         "openai>=1.0.0",
         "duckduckgo-search",
+        "googlesearch-python",
+        "pycountry",
         "arxiv",
         "pypdf",
         "gpt-researcher",

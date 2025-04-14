@@ -10,7 +10,10 @@ import os
 
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
+from agno.run.response import RunResponse
+from agno.tools.arxiv import ArxivTools
 from agno.tools.duckduckgo import DuckDuckGoTools
+from agno.tools.googlesearch import GoogleSearchTools
 
 from gizmo.utils.error_utils import retry, handle_agent_error
 from gizmo.utils.file_utils import write_file
@@ -18,7 +21,7 @@ from gizmo.utils.file_utils import write_file
 
 def _build_tools():
     """Build the tools for the Source Agent."""
-    return [DuckDuckGoTools()]
+    return [DuckDuckGoTools(), GoogleSearchTools(), ArxivTools()]
 
 
 class SourceAgent(Agent):
@@ -32,7 +35,7 @@ class SourceAgent(Agent):
 
         description = """
         The Source Agent is a focused web search assistant that helps gather relevant external content to support individual research steps. 
-        It interacts with research prompts by conducting real-time web searches using DuckDuckGo and returning a curated list of sources. 
+        It interacts with research prompts by conducting real-time web searches using DuckDuckGo/Google/Arxiv and returning a curated list of sources. 
         The agent maintains an efficient, informative, and neutral tone while prioritizing source diversity and relevance.
         """
 
@@ -40,12 +43,15 @@ class SourceAgent(Agent):
         You are a web search assistant supporting a specific research step. For each request:
 
         1. Interpret the research question or prompt carefully.
-        2. Use the DuckDuckGo tool to find the most relevant, reliable, and diverse sources.
-        3. Summarize the key insights from each result using a short, informative snippet.
-        4. Provide a clean, well-formatted Markdown list that includes:
+        2. Use the DuckDuckGo and Google Search tools to find the most relevant, reliable, and diverse sources.
+        3. Act like a crawler and explore a few more pages from each website you use as a source. Try to search related articles.
+        4. If you think the topic could be highlighted in scientific literature, you can also search related articles of arxiv. Judge by the task if it is worth exploring.
+        5. Summarize the key insights from each result using a short, informative snippet.
+        6. Provide a clean, well-formatted Markdown list that includes:
            - A heading for each source or article
            - A brief summary/snippet
            - The full URL
+           Aim at providing 5-10 links.
 
         Focus on quality over quantity and ensure each result adds meaningful value to the research topic.
         """
@@ -65,7 +71,7 @@ class SourceAgent(Agent):
         super().__init__(
             name="Source",
             role="Web Searcher",
-            model=OpenAIChat(id="gpt-3.5-turbo"),  # faster, cheaper model
+            model=OpenAIChat(id="gpt-4o"),  # faster, cheaper model
             tools=_build_tools(),
             description=description,
             instructions=instructions,
@@ -85,7 +91,7 @@ def run_source_agent(step, step_number, memory_dir):
         memory_dir (str): Directory to save intermediate files
 
     Returns:
-        str: The search results
+        RunResponse: The search results
 
     Raises:
         Exception: If the source agent fails after retries

@@ -12,15 +12,36 @@ The workflow includes:
 
 import os
 import time
+import re
 
 from gizmo.agents.gpt_researcher_agent import run_gpt_researcher_agent
 from gizmo.agents.plan_parser_agent import run_plan_parser_agent
 from gizmo.agents.planning_agent import run_planning_agent
+from gizmo.agents.source_agent import run_source_agent
 from gizmo.agents.summarizer_agents import run_step_summarizer_agent, run_final_summarizer_agent
 from gizmo.utils.error_utils import retry, log_error, logger, set_step_context, clear_step_context
 from gizmo.utils.file_utils import write_file, ensure_dir, read_file
 from gizmo.utils.metrics_utils import UsageAccumulator
 from gizmo.workflows.workflow_base import GizmoWorkflow
+
+
+def extract_urls_from_markdown(markdown_text):
+    """
+    Extract URLs from markdown text using a regex pattern.
+    
+    Args:
+        markdown_text (str): Markdown text containing URLs
+        
+    Returns:
+        list: List of extracted URLs
+    """
+    # Pattern to match URLs in markdown links or standalone URLs
+    url_pattern = re.compile(r'(?:\[.*?\]\((https?://[^\s)]+)\)|(https?://[^\s)]+))')
+    matches = url_pattern.findall(markdown_text)
+    
+    # Flatten the list of tuples and remove empty strings
+    urls = [url for match in matches for url in match if url]
+    return urls
 
 
 class DeepGizmoWorkflow(GizmoWorkflow):
@@ -109,8 +130,34 @@ class DeepGizmoWorkflow(GizmoWorkflow):
                 else:
                     # Use GPT Researcher for deep research
                     logger.info(f"Running GPT Researcher for deep research...")
+                    
+                    # First run the source agent to get relevant URLs
+                    logger.info(f"Running source agent to find relevant sources...")
+                    source_start_time = time.time()
+                    source_response = run_source_agent(topic, i, memory_dir)
+                    usage_accumulator.record(source_response)
+                    source_time = time.time() - source_start_time
+                    search_results = source_response.content
+                    
+                    # Save source agent results to output directory
+                    source_file = os.path.join(output_dir, f"step{i}_sources.md")
+                    write_file(source_file, search_results)
+                    
+                    # Extract URLs from the source agent's response
+                    source_urls = extract_urls_from_markdown(search_results)
+                    logger.info(f"Source agent completed in {source_time:.2f}s, found {len(source_urls)} URLs")
+                    
+                    # Run GPT Researcher with the source URLs
                     deep_research_start_time = time.time()
-                    research_report = await run_gpt_researcher_agent(topic, i, memory_dir, output_dir, plan, '\n\n'.join(step_summaries), initial_input)
+                    research_report = await run_gpt_researcher_agent(
+                        topic=topic, 
+                        step_number=i, 
+                        output_dir=output_dir, 
+                        plan=plan, 
+                        previous_steps_summaries=step_summaries, 
+                        initial_query=initial_input,
+                        source_urls=source_urls
+                    )
                     deep_research_time = time.time() - deep_research_start_time
 
                     # Log GPT Researcher metrics

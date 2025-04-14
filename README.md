@@ -59,7 +59,9 @@
    python3 -m venv .venv
    source .venv/bin/activate
    pip3 install -e .
+   ```
 
+   ```bash
    # For Windows
    python -m venv .venv
    .venv\Scripts\activate
@@ -70,10 +72,14 @@
    ```bash
    # For macOS/Linux
    export OPENAI_API_KEY='your-api-key'
+   ```
 
+   ```bash
    # For Windows (Command Prompt)
    set OPENAI_API_KEY=your-api-key
+   ```
 
+   ```bash
    # For Windows (PowerShell)
    $env:OPENAI_API_KEY='your-api-key'
    ```
