@@ -2,6 +2,7 @@
 
 ![Version](https://img.shields.io/badge/version-1.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+[![Documentation](https://img.shields.io/badge/docs-website-orange)](https://purrfessor.github.io/gizmo/)
 
 `gizmo` is a command-line research assistant that performs in-depth internet research on any topic you're curious about - from academic subjects to everyday questions.
 
@@ -15,7 +16,8 @@
 7. [Example Research Projects](#example-research-projects)
 8. [Troubleshooting](#troubleshooting)
 9. [Getting Help](#getting-help)
-10. [License](#license)
+10. [Documentation](#documentation)
+11. [License](#license)
 
 ## Introduction
 
@@ -307,6 +309,17 @@ If you're having trouble or have questions about using `gizmo`:
 - **Examples**: Check the example directory to see how a complete research project looks
 - **Start Small**: Try running a simple research question first to get familiar with the tool
 - **Documentation**: Refer to this README for command options and examples
+
+## Documentation
+
+For comprehensive documentation on Gizmo, visit our [documentation website](https://purrfessor.github.io/gizmo/).
+
+The documentation includes:
+- Detailed installation instructions
+- Command reference with all available options
+- Use case examples for research and development assistance
+- Information on observability and token usage tracking
+- Guides for getting the most out of Gizmo
 
 ## License
 
